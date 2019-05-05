@@ -209,7 +209,7 @@ ORDER BY oid{(withEnumSortOrder ? ", enumsortorder" : "")};" : "")}
             {
                 command.CommandTimeout = commandTimeout;
                 command.AllResultTypesAreUnknown = true;
-                using (var reader = async ? await command.ExecuteReaderAsync() : command.ExecuteReader())
+                using (var reader = async ?  command.ExecuteReader() : command.ExecuteReader())
                 {
                     var byOID = new Dictionary<uint, PostgresType>();
 

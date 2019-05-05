@@ -77,13 +77,13 @@ namespace Npgsql.TypeHandlers
 
         #region Read
 
-        public override ValueTask<string> Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription = null)
+        public override Task<string> Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription = null)
         {
             return buf.ReadBytesLeft >= byteLen
-                ? new ValueTask<string>(buf.ReadString(byteLen))
+                ? new Task<string>(()=>buf.ReadString(byteLen))
                 : ReadLong();
 
-            async ValueTask<string> ReadLong()
+            async Task<string> ReadLong()
             {
                 if (byteLen <= buf.Size)
                 {
@@ -117,7 +117,7 @@ namespace Npgsql.TypeHandlers
             }
         }
 
-        async ValueTask<char[]> INpgsqlTypeHandler<char[]>.Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription)
+        async Task<char[]> INpgsqlTypeHandler<char[]>.Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription)
         {
             if (byteLen <= buf.Size)
             {
@@ -145,7 +145,7 @@ namespace Npgsql.TypeHandlers
             return buf.TextEncoding.GetChars(tempBuf);
         }
 
-        async ValueTask<char> INpgsqlTypeHandler<char>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<char> INpgsqlTypeHandler<char>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
         {
             // Make sure we have enough bytes in the buffer for a single character
             var maxBytes = Math.Min(buf.TextEncoding.GetMaxByteCount(1), len);
@@ -162,23 +162,23 @@ namespace Npgsql.TypeHandlers
             return _singleCharArray[0];
         }
 
-        ValueTask<ArraySegment<char>> INpgsqlTypeHandler<ArraySegment<char>>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        Task<ArraySegment<char>> INpgsqlTypeHandler<ArraySegment<char>>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
         {
             buf.Skip(len);
             throw new NpgsqlSafeReadException(new NotSupportedException("Only writing ArraySegment<char> to PostgreSQL text is supported, no reading."));
         }
 
-        ValueTask<byte[]> INpgsqlTypeHandler<byte[]>.Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription)
+        Task<byte[]> INpgsqlTypeHandler<byte[]>.Read(NpgsqlReadBuffer buf, int byteLen, bool async, FieldDescription fieldDescription)
         {
             var bytes = new byte[byteLen];
             if (buf.ReadBytesLeft >= byteLen)
             {
                 buf.ReadBytes(bytes, 0, byteLen);
-                return new ValueTask<byte[]>(bytes);
+                return new Task<byte[]>(()=>bytes);
             }
             return ReadLong();
 
-            async ValueTask<byte[]> ReadLong()
+            async Task<byte[]> ReadLong()
             {
                 if (byteLen <= buf.Size)
                 {

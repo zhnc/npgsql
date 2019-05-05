@@ -68,7 +68,7 @@ namespace Npgsql.TypeHandlers
         internal override TAny Read<TAny>(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => Read<TAny>(buf, len, false, fieldDescription).Result;
 
-        protected internal override ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal override Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             if (this is INpgsqlTypeHandler<TAny> typedHandler)
                 return typedHandler.Read(buf, len, async, fieldDescription);
@@ -80,13 +80,13 @@ namespace Npgsql.TypeHandlers
             ));
         }
 
-        internal override async ValueTask<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        internal override async Task<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
             => await Read(buf, len, async, fieldDescription);
 
         internal override object ReadAsObject(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => Read(buf, len, false, fieldDescription).Result;
 
-        public async ValueTask<NpgsqlRange<TElement>> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        public async Task<NpgsqlRange<TElement>> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
         {
             await buf.Ensure(1, async);
 

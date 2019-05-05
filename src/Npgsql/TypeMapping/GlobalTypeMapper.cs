@@ -161,9 +161,9 @@ namespace Npgsql.TypeMapping
                 return NpgsqlDbType.Array | ToNpgsqlDbType(type.GetElementType());
             }
 
-            var typeInfo = type.GetTypeInfo();
+            var typeInfo = type;
 
-            var ilist = typeInfo.ImplementedInterfaces.FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+            var ilist = typeInfo.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
             if (ilist != null)
                 return NpgsqlDbType.Array | ToNpgsqlDbType(ilist.GetGenericArguments()[0]);
 
@@ -184,9 +184,9 @@ namespace Npgsql.TypeMapping
         void SetupGlobalTypeMapper()
         {
             // Look for TypeHandlerFactories with mappings in our assembly, set them up
-            foreach (var t in typeof(TypeMapperBase).GetTypeInfo().Assembly.GetTypes().Where(t => t.GetTypeInfo().IsSubclassOf(typeof(NpgsqlTypeHandlerFactory))))
+            foreach (var t in typeof(TypeMapperBase).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(NpgsqlTypeHandlerFactory))))
             {
-                var mappingAttributes = t.GetTypeInfo().GetCustomAttributes(typeof(TypeMappingAttribute), false);
+                var mappingAttributes = t.GetCustomAttributes(typeof(TypeMappingAttribute), false);
                 if (!mappingAttributes.Any())
                     continue;
 
@@ -209,9 +209,9 @@ namespace Npgsql.TypeMapping
 
             // Look for NpgsqlTypeHandler classes with mappings in our assembly, set them up with the DefaultTypeHandlerFactory.
             // This is a shortcut that allows us to not specify a factory for each and every type handler
-            foreach (var t in typeof(TypeMapperBase).GetTypeInfo().Assembly.GetTypes().Where(t => t.GetTypeInfo().IsSubclassOf(typeof(NpgsqlTypeHandler))))
+            foreach (var t in typeof(TypeMapperBase).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(NpgsqlTypeHandler))))
             {
-                var mappingAttributes = t.GetTypeInfo().GetCustomAttributes(typeof(TypeMappingAttribute), false);
+                var mappingAttributes = t.GetCustomAttributes(typeof(TypeMappingAttribute), false);
                 if (!mappingAttributes.Any())
                     continue;
 

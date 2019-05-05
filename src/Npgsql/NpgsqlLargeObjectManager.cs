@@ -79,11 +79,11 @@ namespace Npgsql
                 command.CommandType = CommandType.StoredProcedure;
                 foreach (var argument in arguments)
                     command.Parameters.Add(new NpgsqlParameter { Value = argument });
-                using (var reader = async ? await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess) : command.ExecuteReader(CommandBehavior.SequentialAccess))
+                using (var reader = /*async ? await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess) :*/ command.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    if (async)
-                        await reader.ReadAsync();
-                    else
+                    //if (async)
+                    //    await reader.ReadAsync();
+                    //else
                         reader.Read();
                     return (int)reader.GetBytes(0, 0, buffer, offset, len);
                 }

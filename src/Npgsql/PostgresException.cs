@@ -286,8 +286,8 @@ namespace Npgsql
                     from p in typeof(PostgresException).GetProperties()
                     let k = p.Name
                     where p.Name != nameof(Data)
-                    where p.GetCustomAttribute<PublicAPIAttribute>() != null
-                    let v = p.GetValue(this)
+                    //where p.GetCustomAttribute<PublicAPIAttribute>() != null
+                    let v = p.GetValue(this,null)
                     where v != null
                     where k != nameof(Position) && k != nameof(InternalPosition) || (int)v != 0
                     select new KeyValuePair<string, object>(k, v))

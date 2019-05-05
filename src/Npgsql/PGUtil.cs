@@ -33,7 +33,7 @@ namespace Npgsql
 {
     static class Statics
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static T Expect<T>(IBackendMessage msg)
             => msg is T asT
                 ? asT
@@ -85,29 +85,29 @@ namespace Npgsql
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static int RotateShift(int val, int shift)
             => (val << shift) | (val >> (BitsInInt - shift));
 
         // All ReverseEndianness methods came from the System.Buffers.Binary.BinaryPrimitives class.
         // This takes advantage of the fact that the JIT can detect ROL32 / ROR32 patterns and output the correct intrinsic.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static short ReverseEndianness(short value)
             => (short)ReverseEndianness((ushort)value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static int ReverseEndianness(int value)
             => (int)ReverseEndianness((uint)value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static long ReverseEndianness(long value)
             => (long)ReverseEndianness((ulong)value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static ushort ReverseEndianness(ushort value)
             => (ushort)((value >> 8) + (value << 8));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static uint ReverseEndianness(uint value)
         {
             var mask_xx_zz = (value & 0x00FF00FFU);
@@ -116,13 +116,13 @@ namespace Npgsql
                  + ((mask_ww_yy << 8) | (mask_ww_yy >> 24));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static ulong ReverseEndianness(ulong value)
             => ((ulong)ReverseEndianness((uint)value) << 32) + ReverseEndianness((uint)(value >> 32));
 
-        internal static readonly Task CompletedTask = Task.FromResult(0);
-        internal static readonly Task<bool> TrueTask = Task.FromResult(true);
-        internal static readonly Task<bool> FalseTask = Task.FromResult(false);
+        internal static readonly Task CompletedTask = new Task(()=> { });// Task.FromResult(0);
+        internal static readonly Task<bool> TrueTask = new Task<bool>(() => true);// Task.FromResult(true);
+        internal static readonly Task<bool> FalseTask = new Task<bool>(() => false); //Task.FromResult(false);
         internal static readonly Task<int> CancelledTask = CreateCancelledTask<int>();
 
         static Task<T> CreateCancelledTask<T>()
@@ -135,11 +135,11 @@ namespace Npgsql
         internal static StringComparer InvariantCaseIgnoringStringComparer => StringComparer.InvariantCultureIgnoreCase;
 
         internal static bool IsWindows =>
-#if NET45 || NET451
+//#if NET45 || NET451
             Environment.OSVersion.Platform == PlatformID.Win32NT;
-#else
-            System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
-#endif
+//#else
+//            System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
+//#endif
     }
 
     enum FormatCode : short
@@ -183,7 +183,7 @@ namespace Npgsql
 
         internal bool HasExpired => DateTime.UtcNow >= Expiration;
 
-        internal TimeSpan TimeLeft => IsSet ? Expiration - DateTime.UtcNow : Timeout.InfiniteTimeSpan;
+        internal TimeSpan TimeLeft => IsSet ? Expiration - DateTime.UtcNow : new TimeSpan(0, 0, 0, 0, Timeout.Infinite);
     }
 
     sealed class CultureSetter : IDisposable
@@ -193,20 +193,20 @@ namespace Npgsql
         internal CultureSetter(CultureInfo newCulture)
         {
             _oldCulture = CultureInfo.CurrentCulture;
-#if NET45 || NET451
-            Thread.CurrentThread.CurrentCulture = newCulture;
-#else
-            CultureInfo.CurrentCulture = newCulture;
-#endif
+//#if NET45 || NET451
+//            Thread.CurrentThread.CurrentCulture = newCulture;
+//#else
+            //CultureInfo.CurrentCulture = newCulture;
+//#endif
         }
 
         public void Dispose()
         {
-#if NET45 || NET451
+//#if NET45 || NET451
             Thread.CurrentThread.CurrentCulture = _oldCulture;
-#else
-            CultureInfo.CurrentCulture = _oldCulture;
-#endif
+//#else
+//            CultureInfo.CurrentCulture = _oldCulture;
+//#endif
         }
     }
 }

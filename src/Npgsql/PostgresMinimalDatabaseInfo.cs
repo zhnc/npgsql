@@ -35,11 +35,11 @@ namespace Npgsql
     class PostgresMinimalDatabaseInfoFactory : INpgsqlDatabaseInfoFactory
     {
         public Task<NpgsqlDatabaseInfo> Load(NpgsqlConnection conn, NpgsqlTimeout timeout, bool async)
-            => Task.FromResult(
+            => Task.Factory.StartNew(()=>(
                 new NpgsqlConnectionStringBuilder(conn.ConnectionString).ServerCompatibilityMode == ServerCompatibilityMode.NoTypeLoading
                     ? (NpgsqlDatabaseInfo)new PostgresMinimalDatabaseInfo(conn)
                     : null
-            );
+            ));
     }
 
     class PostgresMinimalDatabaseInfo : PostgresDatabaseInfo
@@ -47,9 +47,9 @@ namespace Npgsql
         static readonly Version DefaultVersion = new Version(10, 0);
 
         static readonly PostgresBaseType[] Types = typeof(NpgsqlDbType).GetFields()
-            .Select(f => f.GetCustomAttribute<BuiltInPostgresType>())
+            //.Select(f => f.GetCustomAttribute<BuiltInPostgresType>())
             .Where(a => a != null)
-            .Select(a => new PostgresBaseType("pg_catalog", a.Name, a.OID))
+            .Select(a => new PostgresBaseType("pg_catalog", a.Name, 1/*a.OID*/))
             .ToArray();
 
         protected override IEnumerable<PostgresType> GetTypes() => Types;
@@ -61,7 +61,7 @@ namespace Npgsql
             Port = csb.Port;
             Name = csb.Database;
 
-            Version = conn.PostgresParameters.TryGetValue("server_version", out string versionString)
+            Version = conn.PostgresParameters.TryGetValue("server_version", out var versionString)
                 ? ParseServerVersion(versionString)
                 : DefaultVersion;
 

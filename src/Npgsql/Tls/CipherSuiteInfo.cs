@@ -44,16 +44,16 @@ namespace Npgsql.Tls
         public int MACLen => Utils.GetHashLen(HashAlgorithm);
 
         public
-#if NET45 || NET451
+//#if NET45 || NET451
             HMAC
-#else
-            IncrementalHash
-#endif
+//#else
+//            IncrementalHash
+//#endif
             CreateHMAC(byte[] key)
         {
             switch (HashAlgorithm)
             {
-#if NET45 || NET451
+//#if NET45 || NET451
                 case TlsHashAlgorithm.SHA1:
                     return new HMACSHA1(key);
                 case TlsHashAlgorithm.SHA256:
@@ -62,16 +62,16 @@ namespace Npgsql.Tls
                     return new HMACSHA384(key);
                 case TlsHashAlgorithm.SHA512:
                     return new HMACSHA512(key);
-#else
-                case TlsHashAlgorithm.SHA1:
-                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, key);
-                case TlsHashAlgorithm.SHA256:
-                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA256, key);
-                case TlsHashAlgorithm.SHA384:
-                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA384, key);
-                case TlsHashAlgorithm.SHA512:
-                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA512, key);
-#endif
+//#else
+//                case TlsHashAlgorithm.SHA1:
+//                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, key);
+//                case TlsHashAlgorithm.SHA256:
+//                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA256, key);
+//                case TlsHashAlgorithm.SHA384:
+//                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA384, key);
+//                case TlsHashAlgorithm.SHA512:
+//                    return IncrementalHash.CreateHMAC(HashAlgorithmName.SHA512, key);
+//#endif
                 default:
                     throw new NotSupportedException();
             }

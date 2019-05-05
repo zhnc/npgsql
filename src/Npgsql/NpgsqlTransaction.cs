@@ -141,7 +141,7 @@ namespace Npgsql
         /// <summary>
         /// Commits the database transaction.
         /// </summary>
-        public override void Commit() => Commit(false).GetAwaiter().GetResult();
+        public override void Commit() => Commit(false).Wait()/*.GetAwaiter().GetResult()*/;
 
         async Task Commit(bool async)
         {
@@ -153,7 +153,7 @@ namespace Npgsql
             using (_connector.StartUserAction())
             {
                 Log.Debug("Committing transaction", _connector.Id);
-                await _connector.ExecuteInternalCommand(PregeneratedMessage.CommitTransaction, async);
+                //await _connector.ExecuteInternalCommand(PregeneratedMessage.CommitTransaction, async);
                 Clear();
             }
         }
@@ -182,14 +182,14 @@ namespace Npgsql
         /// <summary>
         /// Rolls back a transaction from a pending state.
         /// </summary>
-        public override void Rollback() => Rollback(false).GetAwaiter().GetResult();
+        public override void Rollback() => Rollback(false).Wait();//.GetAwaiter().GetResult();
 
         async Task Rollback(bool async)
         {
             CheckReady();
             if (!_connector.DatabaseInfo.SupportsTransactions)
                 return;
-            await _connector.Rollback(async);
+            //await _connector.Rollback(async);
             Clear();
         }
 

@@ -21,7 +21,7 @@
 // TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endregion
 
-#if NET45 || NET451
+//#if NET45 || NET451
 
 using System;
 
@@ -122,4 +122,4 @@ namespace Npgsql.Schema
     }
 }
 
-#endif
+//#endif

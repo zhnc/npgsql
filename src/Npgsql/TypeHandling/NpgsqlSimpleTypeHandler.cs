@@ -89,7 +89,7 @@ namespace Npgsql.TypeHandling
         /// <param name="async">If I/O is required to read the full length of the value, whether it should be performed synchronously or asynchronously.</param>
         /// <param name="fieldDescription">Additional PostgreSQL information about the type, such as the length in varchar(30).</param>
         /// <returns>The fully-read value.</returns>
-        public sealed override ValueTask<TDefault> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        public sealed override Task<TDefault> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
             => Read<TDefault>(buf, len, async, fieldDescription);
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Npgsql.TypeHandling
         /// <param name="async">If I/O is required to read the full length of the value, whether it should be performed synchronously or asynchronously.</param>
         /// <param name="fieldDescription">Additional PostgreSQL information about the type, such as the length in varchar(30).</param>
         /// <returns>The fully-read value.</returns>
-        protected internal sealed override async ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal sealed override async Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             await buf.Ensure(len, async);
             return Read<TAny>(buf, len, fieldDescription);
@@ -261,7 +261,7 @@ namespace Npgsql.TypeHandling
         static NonGenericValidateAndGetLength GenerateNonGenericValidationMethod(Type handlerType)
         {
             var interfaces = handlerType.GetInterfaces().Where(i =>
-                i.GetTypeInfo().IsGenericType &&
+                i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(INpgsqlSimpleTypeHandler<>)
             ).Reverse().ToList();
 
@@ -276,7 +276,7 @@ namespace Npgsql.TypeHandling
 
             foreach (var i in interfaces)
             {
-                var handledType = i.GenericTypeArguments[0];
+                var handledType = i.GetGenericTypeDefinition();//.GenericTypeArguments[0];
 
                 ifElseExpression = Expression.IfThenElse(
                     // Test whether the type of the value given to the delegate corresponds

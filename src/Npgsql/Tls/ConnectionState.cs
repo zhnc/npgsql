@@ -35,13 +35,13 @@ namespace Npgsql.Tls
         public Aes ReadAes { get; set; }
         public Aes WriteAes { get; set; }
         public int BlockLen => 16;
-#if NET45 || NET451
+//#if NET45 || NET451
         public HMAC ReadMac { get; set; }
         public HMAC WriteMac { get; set; }
-#else
-        public IncrementalHash ReadMac { get; set; }
-        public IncrementalHash WriteMac { get; set; }
-#endif
+//#else
+//        public IncrementalHash ReadMac { get; set; }
+//        public IncrementalHash WriteMac { get; set; }
+//#endif
         public ICryptoTransform ReadAesECB { get; set; }
         public ICryptoTransform WriteAesECB { get; set; }
         public ulong[] ReadGCMTable { get; set; }

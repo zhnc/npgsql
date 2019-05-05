@@ -64,27 +64,27 @@ namespace Npgsql
             public override void Flush()
                 => CheckDisposed();
 
-            public override Task FlushAsync(CancellationToken cancellationToken)
-            {
-                CheckDisposed();
-                return cancellationToken.IsCancellationRequested
-                    ? PGUtil.CancelledTask : PGUtil.CompletedTask;
-            }
+            //public override Task FlushAsync(CancellationToken cancellationToken)
+            //{
+            //    CheckDisposed();
+            //    return cancellationToken.IsCancellationRequested
+            //        ? PGUtil.CancelledTask : PGUtil.CompletedTask;
+            //}
 
             public override int Read(byte[] buffer, int offset, int count)
                 => throw new NotSupportedException();
 
-            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-                => throw new NotSupportedException();
+            //public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //    => throw new NotSupportedException();
 
             public override void Write(byte[] buffer, int offset, int count)
                 => Write(buffer, offset, count, CancellationToken.None, false);
 
-            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                using (NoSynchronizationContextScope.Enter())
-                    return Write(buffer, offset, count, cancellationToken, true);
-            }
+            //public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //{
+            //    using (NoSynchronizationContextScope.Enter())
+            //        return Write(buffer, offset, count, cancellationToken, true);
+            //}
 
             Task Write(byte[] buffer, int offset, int count, CancellationToken cancellationToken, bool async)
             {

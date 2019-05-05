@@ -160,11 +160,11 @@ namespace Npgsql
         /// </remarks>
         /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public override Task OpenAsync(CancellationToken cancellationToken)
-        {
-            using (NoSynchronizationContextScope.Enter())
-                return Open(true, cancellationToken);
-        }
+        //public override Task OpenAsync(CancellationToken cancellationToken)
+        //{
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return Open(true, cancellationToken);
+        //}
 
         void GetPoolAndSettings()
         {
@@ -597,11 +597,11 @@ namespace Npgsql
             // Until #1378 is implemented, we have no recovery, and so no need to enlist as a durable resource manager
             // (or as promotable single phase).
 
-            // Note that even when #1378 is implemented in some way, we should check for mono and go volatile in any case -
+            // Note that even when #1378 is implemented in some way, we should check for mono and go Interlocked in any case -
             // distributed transactions aren't supported.
 
-            transaction.EnlistVolatile(new VolatileResourceManager(this, transaction), EnlistmentOptions.None);
-            Log.Debug($"Enlisted volatile resource manager (localid={transaction.TransactionInformation.LocalIdentifier})", connector.Id);
+            transaction.EnlistVolatile(new InterlockedResourceManager(this, transaction), EnlistmentOptions.None);
+            Log.Debug($"Enlisted Interlocked resource manager (localid={transaction.TransactionInformation.LocalIdentifier})", connector.Id);
         }
 
         #endregion
@@ -839,7 +839,7 @@ namespace Npgsql
         /// </summary>
         [Browsable(false)]
         [PublicAPI]
-        public IReadOnlyDictionary<string, string> PostgresParameters
+        public IDictionary<string, string> PostgresParameters
         {
             get
             {
@@ -1246,7 +1246,7 @@ namespace Npgsql
 
         #region State checks
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void CheckConnectionOpen()
         {
             CheckDisposed();
@@ -1254,7 +1254,7 @@ namespace Npgsql
                 throw new InvalidOperationException("Connection is not open");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void CheckConnectionClosed()
         {
             CheckDisposed();
@@ -1262,14 +1262,14 @@ namespace Npgsql
                 throw new InvalidOperationException("Connection already open");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void CheckDisposed()
         {
             if (_disposed)
                 throw new ObjectDisposedException(typeof(NpgsqlConnection).Name);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal NpgsqlConnector CheckReadyAndGetConnector()
         {
             CheckDisposed();

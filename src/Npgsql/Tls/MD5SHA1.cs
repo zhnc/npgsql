@@ -1,4 +1,4 @@
-﻿#if NET45 || NET451
+﻿//#if NET45 || NET451
 #region License
 // The PostgreSQL License
 //
@@ -83,7 +83,7 @@ namespace Npgsql.Tls
         //     The computed hash code.
         protected override byte[] HashFinal()
         {
-            byte[] hash = new byte[36];
+            var hash = new byte[36];
             _md5.TransformFinalBlock(hash, 0, 0);
             _sha1.TransformFinalBlock(hash, 0, 0);
             var md5Hash = _md5.Hash;
@@ -106,4 +106,4 @@ namespace Npgsql.Tls
         }
     }
 }
-#endif
+//#endif

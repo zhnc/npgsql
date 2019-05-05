@@ -42,26 +42,26 @@ namespace Npgsql.Tls
 
         protected virtual void Dispose(bool disposing) {}
 
-#if !(NET45 || NET451)
-        public static HashAlgorithmName GetHashAlgorithmName(TlsHashAlgorithm hashAlgorithm)
-        {
-            switch (hashAlgorithm)
-            {
-                case TlsHashAlgorithm.MD5: return HashAlgorithmName.MD5;
-                case TlsHashAlgorithm.SHA1: return HashAlgorithmName.SHA1;
-                case TlsHashAlgorithm.SHA256: return HashAlgorithmName.SHA256;
-                case TlsHashAlgorithm.SHA384: return HashAlgorithmName.SHA384;
-                case TlsHashAlgorithm.SHA512: return HashAlgorithmName.SHA512;
-                default: throw new NotSupportedException();
-            }
-        }
-#endif
+//#if !(NET45 || NET451)
+//        public static HashAlgorithmName GetHashAlgorithmName(TlsHashAlgorithm hashAlgorithm)
+//        {
+//            switch (hashAlgorithm)
+//            {
+//                case TlsHashAlgorithm.MD5: return HashAlgorithmName.MD5;
+//                case TlsHashAlgorithm.SHA1: return HashAlgorithmName.SHA1;
+//                case TlsHashAlgorithm.SHA256: return HashAlgorithmName.SHA256;
+//                case TlsHashAlgorithm.SHA384: return HashAlgorithmName.SHA384;
+//                case TlsHashAlgorithm.SHA512: return HashAlgorithmName.SHA512;
+//                default: throw new NotSupportedException();
+//            }
+//        }
+//#endif
 
         public static Hasher Create(TlsHashAlgorithm hashAlgorithm)
         {
             switch (hashAlgorithm)
             {
-#if NET45 || NET451
+//#if NET45 || NET451
                 case TlsHashAlgorithm.MD5: return new HashAlgorithmHasher(new MD5CryptoServiceProvider());
                 case TlsHashAlgorithm.SHA1: return new HashAlgorithmHasher(new SHA1CryptoServiceProvider());
                 case TlsHashAlgorithm.SHA256: return new HashAlgorithmHasher(new SHA256CryptoServiceProvider());
@@ -69,19 +69,19 @@ namespace Npgsql.Tls
                 case TlsHashAlgorithm.SHA512: return new HashAlgorithmHasher(new SHA512CryptoServiceProvider());
                 case TlsHashAlgorithm.MD5SHA1: return new HashAlgorithmHasher(new MD5SHA1());
                 default: throw new NotSupportedException();
-#else
-                case TlsHashAlgorithm.MD5: return new IncrementalHashHasher(HashAlgorithmName.MD5);
-                case TlsHashAlgorithm.SHA1: return new IncrementalHashHasher(HashAlgorithmName.SHA1);
-                case TlsHashAlgorithm.SHA256: return new IncrementalHashHasher(HashAlgorithmName.SHA256);
-                case TlsHashAlgorithm.SHA384: return new IncrementalHashHasher(HashAlgorithmName.SHA384);
-                case TlsHashAlgorithm.SHA512: return new IncrementalHashHasher(HashAlgorithmName.SHA512);
-                case TlsHashAlgorithm.MD5SHA1: return new MD5SHA1IncrementalHasher();
-                default: throw new NotSupportedException();
-#endif
+//#else
+//                case TlsHashAlgorithm.MD5: return new IncrementalHashHasher(HashAlgorithmName.MD5);
+//                case TlsHashAlgorithm.SHA1: return new IncrementalHashHasher(HashAlgorithmName.SHA1);
+//                case TlsHashAlgorithm.SHA256: return new IncrementalHashHasher(HashAlgorithmName.SHA256);
+//                case TlsHashAlgorithm.SHA384: return new IncrementalHashHasher(HashAlgorithmName.SHA384);
+//                case TlsHashAlgorithm.SHA512: return new IncrementalHashHasher(HashAlgorithmName.SHA512);
+//                case TlsHashAlgorithm.MD5SHA1: return new MD5SHA1IncrementalHasher();
+//                default: throw new NotSupportedException();
+//#endif
             }
         }
 
-#if NET45 || NET451
+//#if NET45 || NET451
         sealed class HashAlgorithmHasher : Hasher
         {
             readonly HashAlgorithm _hashAlgorithm;
@@ -110,61 +110,61 @@ namespace Npgsql.Tls
                 _hashAlgorithm.TransformBlock(arr, offset, len);
             }
         }
-#else
-        class IncrementalHashHasher : Hasher
-        {
-            readonly IncrementalHash _incrementalHash;
+//#else
+//        class IncrementalHashHasher : Hasher
+//        {
+//            readonly IncrementalHash _incrementalHash;
 
-            internal IncrementalHashHasher(HashAlgorithmName hashAlgorithmName)
-            {
-                _incrementalHash = IncrementalHash.CreateHash(hashAlgorithmName);
-            }
+//            internal IncrementalHashHasher(HashAlgorithmName hashAlgorithmName)
+//            {
+//                _incrementalHash = IncrementalHash.CreateHash(hashAlgorithmName);
+//            }
 
-            protected override void Dispose(bool disposing)
-                => _incrementalHash.Dispose();
+//            protected override void Dispose(bool disposing)
+//                => _incrementalHash.Dispose();
 
-            public override byte[] Final() => _incrementalHash.GetHashAndReset();
+//            public override byte[] Final() => _incrementalHash.GetHashAndReset();
 
-            public override void Update(byte[] arr, int offset, int len)
-                => _incrementalHash.AppendData(arr, offset, len);
-        }
+//            public override void Update(byte[] arr, int offset, int len)
+//                => _incrementalHash.AppendData(arr, offset, len);
+//        }
 
-        // ReSharper disable once InconsistentNaming
-        class MD5SHA1IncrementalHasher : Hasher
-        {
-            readonly IncrementalHash _md5;
-            readonly IncrementalHash _sha1;
+//        // ReSharper disable once InconsistentNaming
+//        class MD5SHA1IncrementalHasher : Hasher
+//        {
+//            readonly IncrementalHash _md5;
+//            readonly IncrementalHash _sha1;
 
-            internal MD5SHA1IncrementalHasher()
-            {
-                _md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
-                _sha1 = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
-            }
+//            internal MD5SHA1IncrementalHasher()
+//            {
+//                _md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+//                _sha1 = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+//            }
 
-            protected override void Dispose(bool disposing)
-            {
-                _md5.Dispose();
-                _sha1.Dispose();
-            }
+//            protected override void Dispose(bool disposing)
+//            {
+//                _md5.Dispose();
+//                _sha1.Dispose();
+//            }
 
-            public override byte[] Final()
-            {
-                var hash = new byte[36];
-                var md5Hash = _md5.GetHashAndReset();
-                var sha1Hash = _sha1.GetHashAndReset();
-                Buffer.BlockCopy(md5Hash, 0, hash, 0, 16);
-                Buffer.BlockCopy(sha1Hash, 0, hash, 16, 20);
-                Array.Clear(md5Hash, 0, 16);
-                Array.Clear(sha1Hash, 0, 20);
-                return hash;
-            }
+//            public override byte[] Final()
+//            {
+//                var hash = new byte[36];
+//                var md5Hash = _md5.GetHashAndReset();
+//                var sha1Hash = _sha1.GetHashAndReset();
+//                Buffer.BlockCopy(md5Hash, 0, hash, 0, 16);
+//                Buffer.BlockCopy(sha1Hash, 0, hash, 16, 20);
+//                Array.Clear(md5Hash, 0, 16);
+//                Array.Clear(sha1Hash, 0, 20);
+//                return hash;
+//            }
 
-            public override void Update(byte[] arr, int offset, int len)
-            {
-                _md5.AppendData(arr, offset, len);
-                _sha1.AppendData(arr, offset, len);
-            }
-        }
-#endif
+//            public override void Update(byte[] arr, int offset, int len)
+//            {
+//                _md5.AppendData(arr, offset, len);
+//                _sha1.AppendData(arr, offset, len);
+//            }
+//        }
+//#endif
     }
 }

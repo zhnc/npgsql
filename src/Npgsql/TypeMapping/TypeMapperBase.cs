@@ -69,7 +69,7 @@ namespace Npgsql.TypeMapping
         public INpgsqlTypeMapper MapEnum<TEnum>(string pgName = null, INpgsqlNameTranslator nameTranslator = null)
             where TEnum : struct
         {
-            if (!typeof(TEnum).GetTypeInfo().IsEnum)
+            if (!typeof(TEnum).IsEnum)
                 throw new ArgumentException("An enum type must be provided");
             if (pgName != null && pgName.Trim() == "")
                 throw new ArgumentException("pgName can't be empty", nameof(pgName));
@@ -89,7 +89,7 @@ namespace Npgsql.TypeMapping
 
         public bool UnmapEnum<TEnum>(string pgName = null, INpgsqlNameTranslator nameTranslator = null) where TEnum : struct
         {
-            if (!typeof(TEnum).GetTypeInfo().IsEnum)
+            if (!typeof(TEnum).IsEnum)
                 throw new ArgumentException("An enum type must be provided");
             if (pgName != null && pgName.Trim() == "")
                 throw new ArgumentException("pgName can't be empty", nameof(pgName));
@@ -146,8 +146,11 @@ namespace Npgsql.TypeMapping
         // TODO: why does ReSharper think `GetCustomAttribute<T>` is non-nullable?
         // ReSharper disable once ConstantConditionalAccessQualifier ConstantNullCoalescingCondition
         static string GetPgName<T>(INpgsqlNameTranslator nameTranslator)
-            => typeof(T).GetCustomAttribute<PgNameAttribute>()?.PgName
-               ?? nameTranslator.TranslateTypeName(typeof(T).Name);
+        {
+            throw new NotImplementedException();
+        }
+            //=> typeof(T).GetCustomAttribute<PgNameAttribute>()?.PgName
+            //   ?? nameTranslator.TranslateTypeName(typeof(T).Name);
 
         #endregion Misc
     }

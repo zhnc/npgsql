@@ -122,12 +122,12 @@ namespace Npgsql
 
         #region Types
 
-        internal IReadOnlyList<PostgresBaseType>      BaseTypes      { get; private set; }
-        internal IReadOnlyList<PostgresArrayType>     ArrayTypes     { get; private set; }
-        internal IReadOnlyList<PostgresRangeType>     RangeTypes     { get; private set; }
-        internal IReadOnlyList<PostgresEnumType>      EnumTypes      { get; private set; }
-        internal IReadOnlyList<PostgresCompositeType> CompositeTypes { get; private set; }
-        internal IReadOnlyList<PostgresDomainType>    DomainTypes    { get; private set; }
+        internal IList<PostgresBaseType>      BaseTypes      { get; private set; }
+        internal IList<PostgresArrayType>     ArrayTypes     { get; private set; }
+        internal IList<PostgresRangeType>     RangeTypes     { get; private set; }
+        internal IList<PostgresEnumType>      EnumTypes      { get; private set; }
+        internal IList<PostgresCompositeType> CompositeTypes { get; private set; }
+        internal IList<PostgresDomainType>    DomainTypes    { get; private set; }
 
         /// <summary>
         /// Indexes backend types by their type OID.
