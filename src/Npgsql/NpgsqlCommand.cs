@@ -71,11 +71,16 @@ namespace Npgsql
 
         readonly List<NpgsqlStatement> _statements;
 
+        internal Task<object> ExecuteScalarAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Returns details about each statement that this command has executed.
         /// Is only populated when an Execute* method is called.
         /// </summary>
-        public IReadOnlyList<NpgsqlStatement> Statements => _statements.AsReadOnly();
+        public IList<NpgsqlStatement> Statements => _statements.AsReadOnly();
 
         UpdateRowSource _updateRowSource = UpdateRowSource.Both;
 
@@ -1029,19 +1034,19 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>A task representing the asynchronous operation, with the number of rows affected if known; -1 otherwise.</returns>
-        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return ExecuteNonQuery(true, cancellationToken);
-        }
+        //public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return ExecuteNonQuery(true, cancellationToken);
+        //}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         async Task<int> ExecuteNonQuery(bool async, CancellationToken cancellationToken)
         {
             using (var reader = await ExecuteDbDataReader(CommandBehavior.Default, async, cancellationToken))
             {
-                while (async ? await reader.NextResultAsync(cancellationToken) : reader.NextResult()) {}
+                while (async ?  reader.NextResult() : reader.NextResult()) {}
                 reader.Close();
                 return reader.RecordsAffected;
             }
@@ -1067,16 +1072,16 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
         /// <returns>A task representing the asynchronous operation, with the first column of the
         /// first row in the result set, or a null reference if the result set is empty.</returns>
         [ItemCanBeNull]
-        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        public Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             using (NoSynchronizationContextScope.Enter())
-                return ExecuteScalar(true, cancellationToken).AsTask();
+                return ExecuteScalar(true, cancellationToken);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         [ItemCanBeNull]
-        async ValueTask<object> ExecuteScalar(bool async, CancellationToken cancellationToken)
+        async Task<object> ExecuteScalar(bool async, CancellationToken cancellationToken)
         {
             var behavior = CommandBehavior.SingleRow;
             if (!Parameters.HasOutputParameters)
@@ -1116,12 +1121,12 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
         /// <param name="behavior">An instance of <see cref="CommandBehavior"/>.</param>
         /// <param name="cancellationToken">A task representing the operation.</param>
         /// <returns></returns>
-        protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return ExecuteDbDataReader(behavior, true, cancellationToken).AsTask();
-        }
+        //protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return ExecuteDbDataReader(behavior, true, cancellationToken).AsTask();
+        //}
 
         /// <summary>
         /// Executes the command text against the connection.
@@ -1129,7 +1134,7 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
         [NotNull]
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => ExecuteDbDataReader(behavior, false, CancellationToken.None).GetAwaiter().GetResult();
 
-        async ValueTask<DbDataReader> ExecuteDbDataReader(CommandBehavior behavior, bool async, CancellationToken cancellationToken)
+        async Task<DbDataReader> ExecuteDbDataReader(CommandBehavior behavior, bool async, CancellationToken cancellationToken)
         {
             var connector = CheckReadyAndGetConnector();
             connector.StartUserAction(this);
@@ -1356,7 +1361,7 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
             return clone;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         NpgsqlConnector CheckReadyAndGetConnector()
         {
             if (State == CommandState.Disposed)

@@ -189,8 +189,8 @@ namespace Npgsql
                 _msg = new PasswordMessage();
             }
 
-            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-                => Write(buffer, offset, count, true);
+            //public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //    => Write(buffer, offset, count, true);
 
             public override void Write(byte[] buffer, int offset, int count)
                 => Write(buffer, offset, count, false).GetAwaiter().GetResult();
@@ -223,8 +223,8 @@ namespace Npgsql
                 _leftToWrite -= count;
             }
 
-            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-                => Read(buffer, offset, count, true);
+            //public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //    => Read(buffer, offset, count, true);
 
             public override int Read(byte[] buffer, int offset, int count)
                 => Read(buffer, offset, count, false).GetAwaiter().GetResult();

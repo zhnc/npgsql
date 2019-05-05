@@ -37,7 +37,7 @@ namespace Npgsql.PostgresTypes
         /// <summary>
         /// The enum's fields.
         /// </summary>
-        public IReadOnlyList<string> Labels => MutableLabels;
+        public IList<string> Labels => MutableLabels;
 
         internal List<string> MutableLabels { get; } = new List<string>();
 

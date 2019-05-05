@@ -195,81 +195,81 @@ namespace Npgsql
 
         #region Write Simple
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteSByte(sbyte value) => Write(value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteByte(byte value) => Write(value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal void WriteInt16(int value)
             => WriteInt16((short)value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt16(short value)
             => WriteInt16(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt16(short value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt16(ushort value)
             => WriteUInt16(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt16(ushort value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt32(int value)
             => WriteInt32(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt32(int value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt32(uint value)
             => WriteUInt32(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt32(uint value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt64(long value)
             => WriteInt64(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteInt64(long value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt64(ulong value)
             => WriteUInt64(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteUInt64(ulong value, bool littleEndian)
             => Write(littleEndian == BitConverter.IsLittleEndian ? value : PGUtil.ReverseEndianness(value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteSingle(float value)
             => WriteSingle(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteSingle(float value, bool littleEndian)
             => WriteInt32(Unsafe.As<float, int>(ref value), littleEndian);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteDouble(double value)
             => WriteDouble(value, false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteDouble(double value, bool littleEndian)
             => WriteInt64(Unsafe.As<double, long>(ref value), littleEndian);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void Write<T>(T value)
         {
             if (Unsafe.SizeOf<T>() > WriteSpaceLeft)

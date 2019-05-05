@@ -129,19 +129,19 @@ namespace Npgsql
             public override void Flush()
                 => throw new NotSupportedException();
 
-            public override Task FlushAsync(CancellationToken cancellationToken)
-                => throw new NotSupportedException();
+            //public override Task FlushAsync(CancellationToken cancellationToken)
+            //    => throw new NotSupportedException();
 
             public override int Read(byte[] buffer, int offset, int count)
                 => Read(buffer, offset, count, CancellationToken.None, false).GetAwaiter().GetResult();
 
-            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                using (NoSynchronizationContextScope.Enter())
-                    return Read(buffer, offset, count, cancellationToken, true).AsTask();
-            }
+            //public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //{
+            //    using (NoSynchronizationContextScope.Enter())
+            //        return Read(buffer, offset, count, cancellationToken, true).AsTask();
+            //}
 
-            ValueTask<int> Read(byte[] buffer, int offset, int count, CancellationToken cancellationToken, bool async)
+            Task<int> Read(byte[] buffer, int offset, int count, CancellationToken cancellationToken, bool async)
             {
                 CheckDisposed();
 
@@ -154,27 +154,27 @@ namespace Npgsql
                 if (buffer.Length - offset < count)
                     throw new ArgumentException("Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.");
                 if (cancellationToken.IsCancellationRequested)
-                    return new ValueTask<int>(PGUtil.CancelledTask);
+                    return new Task<int>(()=>PGUtil.CancelledTask.Result);
 
                 count = Math.Min(count, _len - _read);
 
                 if (count == 0)
-                    return new ValueTask<int>(0);
+                    return new Task<int>(()=>0);
 
                 var task = _buf.ReadBytes(buffer, offset, count, async);
-                if (task.IsCompleted) // This may be a bug in the new version of ValueTask
+                if (task.IsCompleted) // This may be a bug in the new version of Task
                 {
                     _read += task.Result;
                     return task;
                 }
 
-                return new ValueTask<int>(ReadLong(task, cancellationToken, async));
+                return new Task<int>(()=>ReadLong(task, cancellationToken, async).Result);
             }
 
-            async Task<int> ReadLong(ValueTask<int> task, CancellationToken cancellationToken, bool async)
+            async Task<int> ReadLong(Task<int> task, CancellationToken cancellationToken, bool async)
             {
                 var read = async
-                    ? await task
+                    ?  task.GetAwaiter().GetResult()
                     : task.GetAwaiter().GetResult();
                 _read += read;
                 return read;
@@ -183,8 +183,8 @@ namespace Npgsql
             public override void Write(byte[] buffer, int offset, int count)
                 => throw new NotSupportedException();
 
-            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-                => throw new NotSupportedException();
+            //public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            //    => throw new NotSupportedException();
 
             void CheckDisposed()
             {

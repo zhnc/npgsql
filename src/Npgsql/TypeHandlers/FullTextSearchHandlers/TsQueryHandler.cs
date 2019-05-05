@@ -55,7 +55,7 @@ namespace Npgsql.TypeHandlers.FullTextSearchHandlers
 
         #region Read
 
-        public override async ValueTask<NpgsqlTsQuery> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        public override async Task<NpgsqlTsQuery> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             await buf.Ensure(4, async);
             var numTokens = buf.ReadInt32();
@@ -122,22 +122,22 @@ namespace Npgsql.TypeHandlers.FullTextSearchHandlers
             return _value;
         }
 
-        async ValueTask<NpgsqlTsQueryEmpty> INpgsqlTypeHandler<NpgsqlTsQueryEmpty>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryEmpty> INpgsqlTypeHandler<NpgsqlTsQueryEmpty>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryEmpty)await Read(buf, len, async, fieldDescription);
 
-        async ValueTask<NpgsqlTsQueryLexeme> INpgsqlTypeHandler<NpgsqlTsQueryLexeme>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryLexeme> INpgsqlTypeHandler<NpgsqlTsQueryLexeme>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryLexeme)await Read(buf, len, async, fieldDescription);
 
-        async ValueTask<NpgsqlTsQueryNot> INpgsqlTypeHandler<NpgsqlTsQueryNot>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryNot> INpgsqlTypeHandler<NpgsqlTsQueryNot>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryNot)await Read(buf, len, async, fieldDescription);
 
-        async ValueTask<NpgsqlTsQueryAnd> INpgsqlTypeHandler<NpgsqlTsQueryAnd>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryAnd> INpgsqlTypeHandler<NpgsqlTsQueryAnd>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryAnd)await Read(buf, len, async, fieldDescription);
 
-        async ValueTask<NpgsqlTsQueryOr> INpgsqlTypeHandler<NpgsqlTsQueryOr>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryOr> INpgsqlTypeHandler<NpgsqlTsQueryOr>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryOr)await Read(buf, len, async, fieldDescription);
 
-        async ValueTask<NpgsqlTsQueryFollowedBy> INpgsqlTypeHandler<NpgsqlTsQueryFollowedBy>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        async Task<NpgsqlTsQueryFollowedBy> INpgsqlTypeHandler<NpgsqlTsQueryFollowedBy>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => (NpgsqlTsQueryFollowedBy)await Read(buf, len, async, fieldDescription);
 
         #endregion Read

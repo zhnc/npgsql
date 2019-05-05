@@ -38,7 +38,7 @@ namespace Npgsql
     /// Note that a connection may be closed before its TransactionScope completes. In this case we close the NpgsqlConnection
     /// as usual but the connector in a special list in the pool; it will be closed only when the scope completes.
     /// </remarks>
-    class VolatileResourceManager : ISinglePhaseNotification
+    class InterlockedResourceManager : ISinglePhaseNotification
     {
         [CanBeNull] NpgsqlConnector _connector;
         [CanBeNull] Transaction _transaction;
@@ -52,7 +52,7 @@ namespace Npgsql
 
         const int MaximumRollbackAttempts = 20;
 
-        internal VolatileResourceManager(NpgsqlConnection connection, [NotNull] Transaction transaction)
+        internal InterlockedResourceManager(NpgsqlConnection connection, [NotNull] Transaction transaction)
         {
             _connector = connection.Connector;
             _transaction = transaction;
@@ -329,7 +329,7 @@ namespace Npgsql
         void CheckDisposed()
         {
             if (_isDisposed)
-                throw new ObjectDisposedException(nameof(VolatileResourceManager));
+                throw new ObjectDisposedException(nameof(InterlockedResourceManager));
         }
 
         #endregion

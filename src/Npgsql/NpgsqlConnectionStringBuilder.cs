@@ -85,7 +85,7 @@ namespace Npgsql
         {
             // Set the strongly-typed properties to their default values
             foreach (var kv in PropertyDefaults)
-                kv.Key.SetValue(this, kv.Value);
+                kv.Key.SetValue(this, kv.Value, new object[0]);
             // Setting the strongly-typed properties here also set the string-based properties in the base class.
             // Clear them (default settings = empty connection string)
             base.Clear();
@@ -97,40 +97,41 @@ namespace Npgsql
 
         static NpgsqlConnectionStringBuilder()
         {
-            var properties = typeof(NpgsqlConnectionStringBuilder)
-                .GetProperties()
-                .Where(p => p.GetCustomAttribute<NpgsqlConnectionStringPropertyAttribute>() != null)
-                .ToArray();
+            throw new NotImplementedException();
+            //var properties = typeof(NpgsqlConnectionStringBuilder)
+            //    .GetProperties()
+            //    //.Where(p => p.GetCustomAttribute<NpgsqlConnectionStringPropertyAttribute>() != null)
+            //    .ToArray();
 
-            Debug.Assert(properties.All(p => p.CanRead && p.CanWrite));
-            Debug.Assert(properties.All(p => p.GetCustomAttribute<DisplayNameAttribute>() != null));
+            //Debug.Assert(properties.All(p => p.CanRead && p.CanWrite));
+            ////Debug.Assert(properties.All(p => p.GetCustomAttribute<DisplayNameAttribute>() != null));
 
-            PropertiesByKeyword = (
-                from p in properties
-                let displayName = p.GetCustomAttribute<DisplayNameAttribute>().DisplayName.ToUpperInvariant()
-                let propertyName = p.Name.ToUpperInvariant()
-                from k in new[] { displayName }
-                  .Concat(propertyName != displayName ? new[] { propertyName } : EmptyStringArray )
-                  .Concat(p.GetCustomAttribute<NpgsqlConnectionStringPropertyAttribute>().Synonyms
-                    .Select(a => a.ToUpperInvariant())
-                  )
-                  .Select(k => new { Property = p, Keyword = k })
-                select k
-            ).ToDictionary(t => t.Keyword, t => t.Property);
+            //PropertiesByKeyword = (
+            //    from p in properties
+            //    let displayName = (p.GetCustomAttributes(false)[0] as DisplayNameAttribute).DisplayName.ToUpperInvariant()
+            //    let propertyName = p.Name.ToUpperInvariant()
+            //    from k in new[] { displayName }
+            //      //.Concat(propertyName != displayName ? new[] { propertyName } : EmptyStringArray )
+            //      //.Concat(p.GetCustomAttribute<NpgsqlConnectionStringPropertyAttribute>().Synonyms
+            //      //  .Select(a => a.ToUpperInvariant())
+            //      //)
+            //      .Select(k => new { Property = p, Keyword = k })
+            //    select k
+            //).ToDictionary(t => t.Keyword, t => t.Property);
 
-            PropertyNameToCanonicalKeyword = properties.ToDictionary(
-                p => p.Name,
-                p => p.GetCustomAttribute<DisplayNameAttribute>().DisplayName
-            );
+            //PropertyNameToCanonicalKeyword = properties.ToDictionary(
+            //    p => p.Name,
+            //    p => p.GetCustomAttribute<DisplayNameAttribute>().DisplayName
+            //);
 
-            PropertyDefaults = properties
-                .Where(p => p.GetCustomAttribute<ObsoleteAttribute>() == null)
-                .ToDictionary(
-                p => p,
-                p => p.GetCustomAttribute<DefaultValueAttribute>() != null
-                    ? p.GetCustomAttribute<DefaultValueAttribute>().Value
-                    : (p.PropertyType.GetTypeInfo().IsValueType ? Activator.CreateInstance(p.PropertyType) : null)
-            );
+            //PropertyDefaults = properties
+            //    .Where(p => p.GetCustomAttribute<ObsoleteAttribute>() == null)
+            //    .ToDictionary(
+            //    p => p,
+            //    p => p.GetCustomAttribute<DefaultValueAttribute>() != null
+            //        ? p.GetCustomAttribute<DefaultValueAttribute>().Value
+            //        : (p.PropertyType.IsValueType ? Activator.CreateInstance(p.PropertyType) : null)
+            //);
         }
 
         #endregion
@@ -160,12 +161,12 @@ namespace Npgsql
                 var p = GetProperty(keyword);
                 try {
                     object convertedValue;
-                    if (p.PropertyType.GetTypeInfo().IsEnum && value is string) {
+                    if (p.PropertyType.IsEnum && value is string) {
                         convertedValue = Enum.Parse(p.PropertyType, (string)value);
                     } else {
                         convertedValue = Convert.ChangeType(value, p.PropertyType);
                     }
-                    p.SetValue(this, convertedValue);
+                    p.SetValue(this, convertedValue, new object[0]);
                 } catch (Exception e) {
                     throw new ArgumentException("Couldn't set " + keyword, keyword, e);
                 }
@@ -190,7 +191,7 @@ namespace Npgsql
             var cannonicalName = PropertyNameToCanonicalKeyword[p.Name];
             var removed = base.ContainsKey(cannonicalName);
             // Note that string property setters call SetValue, which itself calls base.Remove().
-            p.SetValue(this, PropertyDefaults[p]);
+            p.SetValue(this, PropertyDefaults[p], new object[0]);
             base.Remove(cannonicalName);
             return removed;
         }
@@ -262,7 +263,7 @@ namespace Npgsql
                 return false;
             }
 
-            value = GetProperty(keyword).GetValue(this) ?? "";
+            value = GetProperty(keyword).GetValue(this, new object[0]) ?? "";
             return true;
 
         }

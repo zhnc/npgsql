@@ -39,7 +39,7 @@ namespace Npgsql.TypeHandlers
     public class ByteaHandler : NpgsqlTypeHandler<byte[]>, INpgsqlTypeHandler<ArraySegment<byte>>
     {
         /// <inheritdoc />
-        public override async ValueTask<byte[]> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        public override async Task<byte[]> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             var bytes = new byte[len];
             var pos = 0;
@@ -55,7 +55,7 @@ namespace Npgsql.TypeHandlers
             return bytes;
         }
 
-        ValueTask<ArraySegment<byte>> INpgsqlTypeHandler<ArraySegment<byte>>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        Task<ArraySegment<byte>> INpgsqlTypeHandler<ArraySegment<byte>>.Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
         {
             buf.Skip(len);
             throw new NpgsqlSafeReadException(new NotSupportedException("Only writing ArraySegment<byte> to PostgreSQL bytea is supported, no reading."));

@@ -90,7 +90,7 @@ namespace Npgsql
 
             internal int Total => Idle + Busy;
 
-            internal PoolState Copy() => new PoolState { All = Volatile.Read(ref All) };
+            internal PoolState Copy() => new PoolState { All = Interlocked.Read(ref All) };
 
             public override string ToString()
             {
@@ -140,7 +140,7 @@ namespace Npgsql
             _waiting = new ConcurrentQueue<(TaskCompletionSource<NpgsqlConnector> TaskCompletionSource, bool IsAsync)>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal bool TryAllocateFast(NpgsqlConnection conn, out NpgsqlConnector connector)
         {
             Counters.SoftConnectsPerSecond.Increment();
@@ -155,7 +155,7 @@ namespace Npgsql
             // the idle list before updating Idle.
             // Loop until either State.Idle is 0 or you manage to remove a connector.
             connector = null;
-            while (Volatile.Read(ref State.Idle) > 0)
+            while (Thread.VolatileRead(ref State.Idle) > 0)
             {
                 for (var i = start; connector == null && i < _max; i++)
                 {
@@ -214,7 +214,7 @@ namespace Npgsql
             return false;
         }
 
-        internal async ValueTask<NpgsqlConnector> AllocateLong(NpgsqlConnection conn, NpgsqlTimeout timeout, bool async, CancellationToken cancellationToken)
+        internal async Task<NpgsqlConnector> AllocateLong(NpgsqlConnection conn, NpgsqlTimeout timeout, bool async, CancellationToken cancellationToken)
         {
             // No idle connector was found in the pool.
             // We now loop until one of three things happen:
@@ -282,13 +282,13 @@ namespace Npgsql
 
                                 // TODO: When we drop support for .NET Framework 4.5, switch to RunContinuationsAsynchronously
 #pragma warning disable 4014
-                                Task.Run(() =>
-                                {
-                                    if (!tcs.TrySetResult(null))
-                                    {
-                                        // TODO: Release more??
-                                    }
-                                });
+                                //Task.Run(() =>
+                                //{
+                                //    if (!tcs.TrySetResult(null))
+                                //    {
+                                //        // TODO: Release more??
+                                //    }
+                                //});
 #pragma warning restore 4014
                             }
                             else if (!tcs.TrySetResult(null)) // Open attempt is sync
@@ -355,7 +355,7 @@ namespace Npgsql
                                     {
                                         var timeLeft = timeout.TimeLeft;
                                         if (timeLeft <= TimeSpan.Zero ||
-                                            await Task.WhenAny(tcs.Task, Task.Delay(timeLeft, delayCancellationToken.Token)) != tcs.Task)
+                                             Task.WaitAny(tcs.Task) > 0)
                                         {
                                             // Delay task completed first, either because of a user cancellation or an actual timeout
                                             cancellationToken.ThrowIfCancellationRequested();
@@ -486,7 +486,7 @@ namespace Npgsql
                         var connector2 = connector;
 
                         // TODO: When we drop support for .NET Framework 4.5, switch to RunContinuationsAsynchronously
-                        Task.Run(() =>
+                        Task.Factory.StartNew(() =>
                         {
                             if (!tcs2.TrySetResult(connector2))
                             {

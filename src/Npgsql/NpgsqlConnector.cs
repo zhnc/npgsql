@@ -603,10 +603,10 @@ namespace Npgsql
                         else
                         {
                             var sslStream = new SslStream(_stream, false, certificateValidationCallback);
-                            if (async)
-                                await sslStream.AuthenticateAsClientAsync(Host, clientCertificates, SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, Settings.CheckCertificateRevocation);
-                            else
-                                sslStream.AuthenticateAsClient(Host, clientCertificates, SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, Settings.CheckCertificateRevocation);
+                            //if (async)
+                            //    await sslStream.AuthenticateAsClientAsync(Host, clientCertificates, SslProtocols.Tls/* | SslProtocols.Tls11 | SslProtocols.Tls12*/, Settings.CheckCertificateRevocation);
+                            //else
+                                sslStream.AuthenticateAsClient(Host, clientCertificates, SslProtocols.Tls/* | SslProtocols.Tls11 | SslProtocols.Tls12*/, Settings.CheckCertificateRevocation);
                             _stream = sslStream;
                         }
                         timeout.Check();
@@ -745,7 +745,7 @@ namespace Npgsql
             else
             {
                 // Note that there aren't any timeoutable or cancellable DNS methods
-                endpoints = (await Dns.GetHostAddressesAsync(Host).WithCancellation(cancellationToken))
+                endpoints = ( Dns.GetHostAddresses(Host))
                     .Select(a => new IPEndPoint(a, Port)).ToArray();
             }
 
@@ -888,7 +888,7 @@ namespace Npgsql
             => ReadMessage(false, dataRowLoadingMode).GetAwaiter().GetResult();
 
         [ItemCanBeNull]
-        internal ValueTask<IBackendMessage> ReadMessage(
+        internal Task<IBackendMessage> ReadMessage(
             bool async,
             DataRowLoadingMode dataRowLoadingMode = DataRowLoadingMode.NonSequential,
             bool readingNotifications = false)
@@ -920,9 +920,9 @@ namespace Npgsql
                 return ReadMessageLong(dataRowLoadingMode, readingNotifications);
             }
 
-            return new ValueTask<IBackendMessage>(ParseServerMessage(ReadBuffer, messageCode, len, false));
+            return new Task<IBackendMessage>(()=>ParseServerMessage(ReadBuffer, messageCode, len, false));
 
-            async ValueTask<IBackendMessage> ReadMessageLong(
+            async Task<IBackendMessage> ReadMessageLong(
                 DataRowLoadingMode dataRowLoadingMode2,
                 bool readingNotifications2,
                 bool isReadingPrependedMessage = false)
@@ -1148,7 +1148,7 @@ namespace Npgsql
         /// been seen. Only a sync I/O version of this method exists - in async flows we inline the loop
         /// rather than calling an additional async method, in order to avoid the overhead.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal IBackendMessage SkipUntil(BackendMessageCode stopAt)
         {
             Debug.Assert(stopAt != BackendMessageCode.DataRow, "Shouldn't be used for rows, doesn't know about sequential");
@@ -1419,7 +1419,7 @@ namespace Npgsql
         /// </summary>
         void Cleanup()
         {
-            Debug.Assert(Monitor.IsEntered(this));
+            //Debug.Assert(Monitor.IsEntered(this));
 
             Log.Trace("Cleaning up connector", Id);
             try

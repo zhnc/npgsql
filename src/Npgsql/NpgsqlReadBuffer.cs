@@ -108,7 +108,7 @@ namespace Npgsql
         {
             if (count <= ReadBytesLeft)
                 return;
-            Ensure(count, false).GetAwaiter().GetResult();
+            Ensure(count, false).Wait();
         }
 
         internal Task Ensure(int count, bool async, bool dontBreakOnTimeouts)
@@ -143,11 +143,11 @@ namespace Npgsql
                         if (async)
                         {
                             if (AwaitableSocket == null)  // SSL
-                                read = await Underlying.ReadAsync(Buffer, FilledBytes, toRead);
+                                read =  Underlying.Read(Buffer, FilledBytes, toRead);
                             else  // Non-SSL async I/O, optimized
                             {
                                 AwaitableSocket.SetBuffer(Buffer, FilledBytes, toRead);
-                                await AwaitableSocket.ReceiveAsync();
+                                AwaitableSocket.ReceiveAsync();
                                 read = AwaitableSocket.BytesTransferred;
                             }
                         } else  // Sync I/O
@@ -212,11 +212,11 @@ namespace Npgsql
                 while (len > Size)
                 {
                     Clear();
-                    await Ensure(Size, async);
+                     Ensure(Size, async).Wait();
                     len -= Size;
                 }
                 Clear();
-                await Ensure((int)len, async);
+                 Ensure((int)len, async).Wait();
             }
 
             ReadPosition += (int)len;
@@ -226,17 +226,17 @@ namespace Npgsql
 
         #region Read Simple
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public sbyte ReadSByte() => Read<sbyte>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public byte ReadByte() => Read<byte>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public short ReadInt16()
             => ReadInt16(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public short ReadInt16(bool littleEndian)
         {
             var result = Read<short>();
@@ -244,11 +244,11 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public ushort ReadUInt16()
             => ReadUInt16(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public ushort ReadUInt16(bool littleEndian)
         {
             var result = Read<ushort>();
@@ -256,11 +256,11 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public int ReadInt32()
             => ReadInt32(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public int ReadInt32(bool littleEndian)
         {
             var result = Read<int>();
@@ -268,11 +268,11 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public uint ReadUInt32()
             => ReadUInt32(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public uint ReadUInt32(bool littleEndian)
         {
             var result = Read<uint>();
@@ -280,11 +280,11 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public long ReadInt64()
             => ReadInt64(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public long ReadInt64(bool littleEndian)
         {
             var result = Read<long>();
@@ -292,11 +292,11 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public ulong ReadUInt64()
             => ReadUInt64(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public ulong ReadUInt64(bool littleEndian)
         {
             var result = Read<ulong>();
@@ -304,29 +304,29 @@ namespace Npgsql
                 ? result : PGUtil.ReverseEndianness(result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public float ReadSingle()
             => ReadSingle(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public float ReadSingle(bool littleEndian)
         {
             var result = ReadInt32(littleEndian);
             return Unsafe.As<int, float>(ref result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public double ReadDouble()
             => ReadDouble(false);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public double ReadDouble(bool littleEndian)
         {
             var result = ReadInt64(littleEndian);
             return Unsafe.As<long, double>(ref result);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private T Read<T>()
         {
             if (Unsafe.SizeOf<T>() > ReadBytesLeft)
@@ -357,40 +357,40 @@ namespace Npgsql
             return result;
         }
 
-        public void ReadBytes(Span<byte> output)
-        {
-            Debug.Assert(output.Length <= ReadBytesLeft);
-            new Span<byte>(Buffer, ReadPosition, output.Length).CopyTo(output);
-            ReadPosition += output.Length;
-        }
+        //public void ReadBytes(Span<byte> output)
+        //{
+        //    Debug.Assert(output.Length <= ReadBytesLeft);
+        //    new Span<byte>(Buffer, ReadPosition, output.Length).CopyTo(output);
+        //    ReadPosition += output.Length;
+        //}
 
-        public void ReadBytes(byte[] output, int outputOffset, int len)
-            => ReadBytes(new Span<byte>(output, outputOffset, len));
+        public void ReadBytes(byte[] output, int outputOffset, int len) { }
+            //=> ReadBytes(new Span<byte>(output, outputOffset, len));
 
         #endregion
 
         #region Read Complex
 
-        public ValueTask<int> ReadBytes(byte[] output, int outputOffset, int len, bool async)
+        public Task<int> ReadBytes(byte[] output, int outputOffset, int len, bool async)
         {
             var readFromBuffer = Math.Min(ReadBytesLeft, len);
             if (readFromBuffer > 0)
             {
                 System.Buffer.BlockCopy(Buffer, ReadPosition, output, outputOffset, readFromBuffer);
                 ReadPosition += len;
-                return new ValueTask<int>(readFromBuffer);
+                return new Task<int>(()=>readFromBuffer);
             }
 
-            return new ValueTask<int>(ReadBytesLong());
+            return new Task<int>(()=>ReadBytesLong());
 
-            async Task<int> ReadBytesLong()
+            int ReadBytesLong()
             {
                 Debug.Assert(ReadPosition == 0);
                 Clear();
                 try
                 {
                     var read = async
-                        ? await Underlying.ReadAsync(output, outputOffset, len)
+                        ? Underlying.Read(output, outputOffset, len)
                         : Underlying.Read(output, outputOffset, len);
                     if (read == 0)
                         throw new EndOfStreamException();

@@ -39,9 +39,9 @@ namespace Npgsql.TypeHandling
             // Recursively look for the TypeHandler<T> superclass to extract its T as the
             // DefaultValueType
             var baseClass = handlerType;
-            while (!baseClass.GetTypeInfo().IsGenericType || baseClass.GetGenericTypeDefinition() != typeof(NpgsqlTypeHandler<>))
+            while (!baseClass.IsGenericType || baseClass.GetGenericTypeDefinition() != typeof(NpgsqlTypeHandler<>))
             {
-                baseClass = baseClass.GetTypeInfo().BaseType;
+                baseClass = baseClass.BaseType;
                 if (baseClass == null)
                     throw new Exception($"Npgsql type handler {handlerType} doesn't inherit from TypeHandler<>?");
             }

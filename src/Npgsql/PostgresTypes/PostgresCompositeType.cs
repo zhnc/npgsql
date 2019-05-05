@@ -39,7 +39,7 @@ namespace Npgsql.PostgresTypes
         /// <summary>
         /// Holds the name and types for all fields.
         /// </summary>
-        public IReadOnlyList<Field> Fields => MutableFields;
+        public IList<Field> Fields => MutableFields;
 
         internal List<Field> MutableFields { get; } = new List<Field>();
 

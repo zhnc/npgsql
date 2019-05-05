@@ -82,7 +82,7 @@ namespace Npgsql.TypeHandling
         /// <param name="async">If I/O is required to read the full length of the value, whether it should be performed synchronously or asynchronously.</param>
         /// <param name="fieldDescription">Additional PostgreSQL information about the type, such as the length in varchar(30).</param>
         /// <returns>The fully-read value.</returns>
-        public abstract ValueTask<TDefault> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null);
+        public abstract Task<TDefault> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null);
 
         /// <summary>
         /// Reads a value of type <typeparamref name="TDefault"/> with the given length from the provided buffer,
@@ -95,7 +95,7 @@ namespace Npgsql.TypeHandling
         /// <param name="async">If I/O is required to read the full length of the value, whether it should be performed synchronously or asynchronously.</param>
         /// <param name="fieldDescription">Additional PostgreSQL information about the type, such as the length in varchar(30).</param>
         /// <returns>The fully-read value.</returns>
-        protected internal override ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal override Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             var asTypedHandler = this as INpgsqlTypeHandler<TAny>;
             if (asTypedHandler == null)
@@ -113,7 +113,7 @@ namespace Npgsql.TypeHandling
         internal override TAny Read<TAny>(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => Read<TAny>(buf, len, false, fieldDescription).Result;
 
-        internal override async ValueTask<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        internal override async Task<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
             => await Read<TDefault>(buf, len, async, fieldDescription);
 
         internal override object ReadAsObject(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
@@ -223,7 +223,7 @@ namespace Npgsql.TypeHandling
         static NonGenericValidateAndGetLength GenerateNonGenericValidationMethod(Type handlerType)
         {
             var interfaces = handlerType.GetInterfaces().Where(i =>
-                i.GetTypeInfo().IsGenericType &&
+                i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(INpgsqlTypeHandler<>)
             ).Reverse().ToList();
 
@@ -238,7 +238,7 @@ namespace Npgsql.TypeHandling
 
             foreach (var i in interfaces)
             {
-                var handledType = i.GenericTypeArguments[0];
+                var handledType = i.GetGenericArguments()[0];//.GenericTypeArguments[0];
 
                 ifElseExpression = Expression.IfThenElse(
                     // Test whether the type of the value given to the delegate corresponds

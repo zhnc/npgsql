@@ -75,7 +75,7 @@ namespace Npgsql.TypeHandlers
         internal override TAny Read<TAny>(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => Read<TAny>(buf, len, false, fieldDescription).Result;
 
-        protected internal override async ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal override async Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             if (IsArrayOf<TAny, TElement>.Value)
                 return (TAny)(object)await ReadArray<TElement>(buf, async);
@@ -90,13 +90,13 @@ namespace Npgsql.TypeHandlers
             ));
         }
 
-        internal override async ValueTask<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        internal override async Task<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
             => await ReadArray<TElement>(buf, async);
 
         internal override object ReadAsObject(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => ReadArray<TElement>(buf, false).Result;
 
-        protected async ValueTask<Array> ReadArray<T>(NpgsqlReadBuffer buf, bool async)
+        protected async Task<Array> ReadArray<T>(NpgsqlReadBuffer buf, bool async)
         {
             await buf.Ensure(12, async);
             var dimensions = buf.ReadInt32();
@@ -149,7 +149,7 @@ namespace Npgsql.TypeHandlers
             }
         }
 
-        protected async ValueTask<List<T>> ReadList<T>(NpgsqlReadBuffer buf, bool async)
+        protected async Task<List<T>> ReadList<T>(NpgsqlReadBuffer buf, bool async)
         {
             await buf.Ensure(12, async);
             var dimensions = buf.ReadInt32();
@@ -383,7 +383,7 @@ namespace Npgsql.TypeHandlers
         public ArrayHandlerWithPsv(NpgsqlTypeHandler elementHandler)
             : base(elementHandler) { }
 
-        protected internal override async ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal override async Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             if (IsArrayOf<TAny, TElementPsv>.Value)
                 return (TAny)(object)await ReadArray<TElementPsv>(buf, async);
@@ -397,7 +397,7 @@ namespace Npgsql.TypeHandlers
         internal override object ReadPsvAsObject(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => ReadPsvAsObject(buf, len, false, fieldDescription).Result;
 
-        internal override async ValueTask<object> ReadPsvAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
+        internal override async Task<object> ReadPsvAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription)
             => await ReadArray<TElementPsv>(buf, async);
     }
 }

@@ -55,7 +55,7 @@ namespace Npgsql.TypeHandlers
 
         internal EnumHandler(Dictionary<TEnum, string> enumToLabel, Dictionary<string, TEnum> labelToEnum)
         {
-            Debug.Assert(typeof(TEnum).GetTypeInfo().IsEnum, "EnumHandler instantiated for non-enum type");
+            Debug.Assert(typeof(TEnum).IsEnum, "EnumHandler instantiated for non-enum type");
             _enumToLabel = enumToLabel;
             _labelToEnum = labelToEnum;
         }

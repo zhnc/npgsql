@@ -39,7 +39,7 @@ namespace Npgsql
         internal NpgsqlSequentialDataReader(NpgsqlConnector connector)
             : base(connector) {}
 
-        internal override ValueTask<IBackendMessage> ReadMessage(bool async)
+        internal override Task<IBackendMessage> ReadMessage(bool async)
             => Connector.ReadMessage(async, DataRowLoadingMode.Sequential);
 
         internal override void ProcessDataMessage(DataRowMessage dataMsg)
@@ -54,69 +54,69 @@ namespace Npgsql
             PosInColumn = 0;
         }
 
-        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return GetFieldValue<T>(ordinal, true).AsTask();
-        }
+        //public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return GetFieldValue<T>(ordinal, true).AsTask();
+        //}
 
-        public override T GetFieldValue<T>(int column)
-            => GetFieldValue<T>(column, false).GetAwaiter().GetResult();
+        //public override T GetFieldValue<T>(int column)
+        //    => GetFieldValue<T>(column, false).GetAwaiter().GetResult();
 
-        async ValueTask<T> GetFieldValue<T>(int column, bool async)
-        {
-            CheckRowAndOrdinal(column);
+        //async Task<T> GetFieldValue<T>(int column, bool async)
+        //{
+        //    CheckRowAndOrdinal(column);
 
-            await SeekToColumn(column, async);
-            CheckColumnStart();
-            if (ColumnLen == -1)
-            {
-                if (NullableHandler<T>.Exists)
-                    return default;
-                if (typeof(T) == typeof(object))
-                    return (T)(object)DBNull.Value;
-                throw new InvalidCastException("Column is null");
-            }
+        //    await SeekToColumn(column, async);
+        //    CheckColumnStart();
+        //    if (ColumnLen == -1)
+        //    {
+        //        if (NullableHandler<T>.Exists)
+        //            return default;
+        //        if (typeof(T) == typeof(object))
+        //            return (T)(object)DBNull.Value;
+        //        throw new InvalidCastException("Column is null");
+        //    }
 
-            var fieldDescription = RowDescription[column];
-            try
-            {
-                if (NullableHandler<T>.Exists)
-                {
-                    return ColumnLen <= Buffer.ReadBytesLeft
-                        ? NullableHandler<T>.Read(Buffer, ColumnLen, fieldDescription)
-                        : await NullableHandler<T>.ReadAsync(Buffer, ColumnLen, async, fieldDescription);
-                }
+        //    var fieldDescription = RowDescription[column];
+        //    try
+        //    {
+        //        if (NullableHandler<T>.Exists)
+        //        {
+        //            return ColumnLen <= Buffer.ReadBytesLeft
+        //                ? NullableHandler<T>.Read(Buffer, ColumnLen, fieldDescription)
+        //                : await NullableHandler<T>.ReadAsync(Buffer, ColumnLen, async, fieldDescription);
+        //        }
 
-                if (typeof(T) == typeof(object))
-                {
-                    return ColumnLen <= Buffer.ReadBytesLeft
-                        ? (T)fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, fieldDescription)
-                        : (T)await fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, async, fieldDescription);
-                }
-                else
-                {
-                    return ColumnLen <= Buffer.ReadBytesLeft
-                        ? fieldDescription.Handler.Read<T>(Buffer, ColumnLen, fieldDescription)
-                        : await fieldDescription.Handler.Read<T>(Buffer, ColumnLen, async, fieldDescription);
-                }
-            }
-            catch (NpgsqlSafeReadException e)
-            {
-                throw e.InnerException;
-            }
-            catch
-            {
-                Connector.Break();
-                throw;
-            }
-            finally
-            {
-                // Important in case a NpgsqlSafeReadException was thrown, position must still be updated
-                PosInColumn += ColumnLen;
-            }
-        }
+        //        if (typeof(T) == typeof(object))
+        //        {
+        //            return ColumnLen <= Buffer.ReadBytesLeft
+        //                ? (T)fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, fieldDescription)
+        //                : (T)await fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, async, fieldDescription);
+        //        }
+        //        else
+        //        {
+        //            return ColumnLen <= Buffer.ReadBytesLeft
+        //                ? fieldDescription.Handler.Read<T>(Buffer, ColumnLen, fieldDescription)
+        //                : await fieldDescription.Handler.Read<T>(Buffer, ColumnLen, async, fieldDescription);
+        //        }
+        //    }
+        //    catch (NpgsqlSafeReadException e)
+        //    {
+        //        throw e.InnerException;
+        //    }
+        //    catch
+        //    {
+        //        Connector.Break();
+        //        throw;
+        //    }
+        //    finally
+        //    {
+        //        // Important in case a NpgsqlSafeReadException was thrown, position must still be updated
+        //        PosInColumn += ColumnLen;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the value of the specified column as an instance of <see cref="object"/>.
@@ -319,14 +319,14 @@ namespace Npgsql
         /// <param name="ordinal">The zero-based column to be retrieved.</param>
         /// <param name="cancellationToken">Currently ignored.</param>
         /// <returns><b>true</b> if the specified column value is equivalent to <see cref="DBNull"/> otherwise <b>false</b>.</returns>
-        public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return IsDBNull(ordinal, true);
-        }
+        //public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return IsDBNull(ordinal, true);
+        //}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         // ReSharper disable once InconsistentNaming
         async Task<bool> IsDBNull(int ordinal, bool async)
         {

@@ -82,12 +82,12 @@ namespace Npgsql
         /// <param name="count">The maximum number of bytes that should be read.</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>How many bytes actually read, or 0 if end of file was already reached.</returns>
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return Read(buffer, offset, count, true);
-        }
+        //public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return Read(buffer, offset, count, true);
+        //}
 
         async Task<int> Read(byte[] buffer, int offset, int count, bool async)
         {
@@ -134,12 +134,12 @@ namespace Npgsql
         /// <param name="offset">The offset in the buffer at which to begin copying bytes.</param>
         /// <param name="count">The number of bytes to write.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using (NoSynchronizationContextScope.Enter())
-                return Write(buffer, offset, count, true);
-        }
+        //public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return Write(buffer, offset, count, true);
+        //}
 
         async Task Write(byte[] buffer, int offset, int count, bool async)
         {

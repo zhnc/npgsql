@@ -73,7 +73,7 @@ namespace Npgsql
             return this;
         }
 
-        public AwaitableSocket SendAsync()
+        public AwaitableSocket SendAsync()    
         {
             Reset();
 
@@ -104,7 +104,7 @@ namespace Npgsql
                 || Interlocked.CompareExchange(
                     ref _continuation, continuation, null) == Sentinel)
             {
-                Task.Run(continuation);
+                Task.Factory.StartNew(continuation);
             }
         }
 
@@ -132,4 +132,9 @@ namespace Npgsql
             _socketAsyncEventArgs?.Dispose();
         }
     }
+
+    //internal interface INotifyCompletion
+    //{
+    //    void OnCompleted(Action continuation);
+    //}
 }

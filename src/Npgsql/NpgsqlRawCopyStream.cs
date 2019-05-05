@@ -188,7 +188,7 @@ namespace Npgsql
             // If our buffer is empty, read in more. Otherwise return whatever is there, even if the
             // user asked for more (normal socket behavior)
             if (_readBuf.ReadBytesLeft == 0) {
-                _readBuf.ReadMore(false).GetAwaiter().GetResult();
+                _readBuf.ReadMore(false).Wait();//.GetAwaiter().GetResult();
             }
 
             Debug.Assert(_readBuf.ReadBytesLeft > 0);

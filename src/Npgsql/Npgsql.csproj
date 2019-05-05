@@ -1,64 +1,285 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\Microsoft.Bcl.Build.targets" Condition="Exists('..\Microsoft.Bcl.Build.targets')" />
   <PropertyGroup>
-    <Description>Npgsql is the open source .NET data provider for PostgreSQL.</Description>
-    <Authors>Shay Rojansky;Yoh Deadfall;Austin Drenski;Emil Lenngren;Francisco Figueiredo Jr.;Kenji Uno</Authors>
-    <Copyright>Copyright 2019 © The Npgsql Development Team</Copyright>
-    <Company>Npgsql</Company>
-    <PackageTags>npgsql postgresql postgres ado ado.net database sql</PackageTags>
-    <VersionPrefix>4.0.7</VersionPrefix>
-    <LangVersion>latest</LangVersion>
-    <TargetFrameworks>net45;net451;netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT' OR '$(CoreOnly)' == 'True'">netstandard2.0</TargetFrameworks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyOriginatorKeyFile>../../Npgsql.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageProjectUrl>http://www.npgsql.org</PackageProjectUrl>
-    <PackageIconUrl>http://www.npgsql.org/img/postgresql.gif</PackageIconUrl>
-    <PackageLicenseExpression>PostgreSQL</PackageLicenseExpression>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/npgsql/npgsql</RepositoryUrl>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9A19103F-16F7-4668-BE54-9A1E7A4F7556}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Npgsql</RootNamespace>
+    <AssemblyName>Npgsql</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <!-- This is somehow important for Microsoft.CodeQuality.Analyzers -->
-    <Features>IOperation</Features>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="NpgsqlMetaData.xml" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.2" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+    <!-- <PackageReference Include="Microsoft.Bcl.Async"> -->
+    <!-- <Version>1.0.168</Version> -->
+    <!-- </PackageReference> -->
+    <PackageReference Include="Microsoft.Bcl.Async">
+      <Version>1.0.168</Version>
+    </PackageReference>
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.2" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Transactions" Pack="false" />
+    <Reference Include="System.DirectoryServices" Pack="false" />
     <!-- Causes issues in Appveyor and Travis
     <PackageReference Include="Microsoft.CodeQuality.Analyzers" Version="2.6.0-beta2" PrivateAssets="All" />
 -->
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System.Transactions" Pack="false" />
-    <Reference Include="System.DirectoryServices" Pack="false" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Transactions" Pack="false" />
-    <Reference Include="System.DirectoryServices" Pack="false" />
+  <ItemGroup>
+    <Compile Include="AwaitableSocket.cs" />
+    <Compile Include="BackendMessages\AuthenticationMessages.cs" />
+    <Compile Include="BackendMessages\BackendKeyDataMessage.cs" />
+    <Compile Include="BackendMessages\BindCompleteMessage.cs" />
+    <Compile Include="BackendMessages\CloseCompletedMessage.cs" />
+    <Compile Include="BackendMessages\CommandCompleteMessage.cs" />
+    <Compile Include="BackendMessages\CopyMessages.cs" />
+    <Compile Include="BackendMessages\DataRowMessage.cs" />
+    <Compile Include="BackendMessages\EmptyQueryMessage.cs" />
+    <Compile Include="BackendMessages\ErrorOrNoticeMessage.cs" />
+    <Compile Include="BackendMessages\NoDataMessage.cs" />
+    <Compile Include="BackendMessages\ParameterDescriptionMessage.cs" />
+    <Compile Include="BackendMessages\ParseCompleteMessage.cs" />
+    <Compile Include="BackendMessages\PortalSuspendedMessage.cs" />
+    <Compile Include="BackendMessages\ReadyForQueryMessage.cs" />
+    <Compile Include="BackendMessages\RowDescriptionMessage.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="ConnectorPool.cs" />
+    <Compile Include="Counters.cs" />
+    <Compile Include="FrontendMessages\BindMessage.cs" />
+    <Compile Include="FrontendMessages\CancelRequestMessage.cs" />
+    <Compile Include="FrontendMessages\CloseMessage.cs" />
+    <Compile Include="FrontendMessages\CopyFailMessage.cs" />
+    <Compile Include="FrontendMessages\DescribeMessage.cs" />
+    <Compile Include="FrontendMessages\ExecuteMessage.cs" />
+    <Compile Include="FrontendMessages\FlushMessage.cs" />
+    <Compile Include="FrontendMessages\ParseMessage.cs" />
+    <Compile Include="FrontendMessages\PasswordMessage.cs" />
+    <Compile Include="FrontendMessages\PregeneratedMessage.cs" />
+    <Compile Include="FrontendMessages\QueryMessage.cs" />
+    <Compile Include="FrontendMessages\SSLRequestMessage.cs" />
+    <Compile Include="FrontendMessages\StartupMessage.cs" />
+    <Compile Include="FrontendMessages\SyncMessage.cs" />
+    <Compile Include="FrontendMessages\TerminateMessage.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="ICancelable.cs" />
+    <Compile Include="INpgsqlDatabaseInfoFactory.cs" />
+    <Compile Include="KerberosUsernameProvider.cs" />
+    <Compile Include="Logging\ConsoleLoggingProvider.cs" />
+    <Compile Include="Logging\INpgsqlLoggingProvider.cs" />
+    <Compile Include="Logging\NoOpLoggingProvider.cs" />
+    <Compile Include="Logging\NpgsqlLogger.cs" />
+    <Compile Include="Logging\NpgsqlLogLevel.cs" />
+    <Compile Include="Logging\NpgsqlLogManager.cs" />
+    <Compile Include="NameTranslation\INpgsqlNameTranslator.cs" />
+    <Compile Include="NameTranslation\NpgsqlNullNameTranslator.cs" />
+    <Compile Include="NameTranslation\NpgsqlSnakeCaseNameTranslator.cs" />
+    <Compile Include="NoSynchronizationContextScope.cs" />
+    <Compile Include="NpgsqlBinaryExporter.cs" />
+    <Compile Include="NpgsqlBinaryImporter.cs" />
+    <Compile Include="NpgsqlCommand.cs" />
+    <Compile Include="NpgsqlCommandBuilder.cs" />
+    <Compile Include="NpgsqlConnection.cs" />
+    <Compile Include="NpgsqlConnectionStringBuilder.cs" />
+    <Compile Include="NpgsqlConnector.Auth.cs" />
+    <Compile Include="NpgsqlConnector.cs" />
+    <Compile Include="NpgsqlDataAdapter.cs" />
+    <Compile Include="NpgsqlDatabaseInfo.cs" />
+    <Compile Include="NpgsqlDataReader.cs" />
+    <Compile Include="NpgsqlDefaultDataReader.cs" />
+    <Compile Include="NpgsqlException.cs" />
+    <Compile Include="NpgsqlFactory.cs" />
+    <Compile Include="NpgsqlLargeObjectManager.cs" />
+    <Compile Include="NpgsqlLargeObjectStream.cs" />
+    <Compile Include="NpgsqlLengthCache.cs" />
+    <Compile Include="NpgsqlNotificationEventArgs.cs" />
+    <Compile Include="NpgsqlOperationInProgressException.cs" />
+    <Compile Include="NpgsqlParameter.cs" />
+    <Compile Include="NpgsqlParameterCollection.cs" />
+    <Compile Include="NpgsqlParameter`.cs" />
+    <Compile Include="NpgsqlRawCopyStream.cs" />
+    <Compile Include="NpgsqlReadBuffer.cs" />
+    <Compile Include="NpgsqlReadBuffer.Stream.cs" />
+    <Compile Include="NpgsqlSchema.cs" />
+    <Compile Include="NpgsqlSequentialDataReader.cs" />
+    <Compile Include="NpgsqlStatement.cs" />
+    <Compile Include="NpgsqlTransaction.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlDate.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlDateTime.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlDbType.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlRange.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlTimeSpan.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlTsQuery.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlTsVector.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlTypes.cs" />
+    <Compile Include="NpgsqlTypes\NpgsqlUserTypes.cs" />
+    <Compile Include="NpgsqlWriteBuffer.cs" />
+    <Compile Include="NpgsqlWriteBuffer.Stream.cs" />
+    <Compile Include="PgPassFile.cs" />
+    <Compile Include="PGUtil.cs" />
+    <Compile Include="PoolManager.cs" />
+    <Compile Include="PostgresDatabaseInfo.cs" />
+    <Compile Include="PostgresException.cs" />
+    <Compile Include="PostgresMinimalDatabaseInfo.cs" />
+    <Compile Include="PostgresNotice.cs" />
+    <Compile Include="PostgresTypes\PostgresArrayType.cs" />
+    <Compile Include="PostgresTypes\PostgresBaseType.cs" />
+    <Compile Include="PostgresTypes\PostgresCompositeType.cs" />
+    <Compile Include="PostgresTypes\PostgresDomainType.cs" />
+    <Compile Include="PostgresTypes\PostgresEnumType.cs" />
+    <Compile Include="PostgresTypes\PostgresFacets.cs" />
+    <Compile Include="PostgresTypes\PostgresRangeType.cs" />
+    <Compile Include="PostgresTypes\PostgresType.cs" />
+    <Compile Include="PostgresTypes\PostgresUnknownType.cs" />
+    <Compile Include="PreparedStatement.cs" />
+    <Compile Include="PreparedStatementManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadOnlySpan.cs" />
+    <Compile Include="Schema\DbColumn.cs" />
+    <Compile Include="Schema\DbColumnSchemaGenerator.cs" />
+    <Compile Include="Schema\NpgsqlDbColumn.cs" />
+    <Compile Include="SingleThreadSynchronizationContext.cs" />
+    <Compile Include="Span.cs" />
+    <Compile Include="SqlQueryParser.cs" />
+    <Compile Include="TaskExtensions.cs" />
+    <Compile Include="Tls\BigInteger.cs" />
+    <Compile Include="Tls\CipherSuiteInfo.cs" />
+    <Compile Include="Tls\ClientAlertException.cs" />
+    <Compile Include="Tls\ConnectionState.cs" />
+    <Compile Include="Tls\EllipticCurve.cs" />
+    <Compile Include="Tls\Enums.cs" />
+    <Compile Include="Tls\GaloisCounterMode.cs" />
+    <Compile Include="Tls\HandshakeData.cs" />
+    <Compile Include="Tls\HandshakeMessagesBuffer.cs" />
+    <Compile Include="Tls\Hasher.cs" />
+    <Compile Include="Tls\MD5SHA1.cs" />
+    <Compile Include="Tls\RsaPKCS1.cs" />
+    <Compile Include="Tls\ServerAlertException.cs" />
+    <Compile Include="Tls\TlsClientStream.cs" />
+    <Compile Include="Tls\Utils.cs" />
+    <Compile Include="TypeHandlers\ArrayHandler.cs" />
+    <Compile Include="TypeHandlers\BitStringHandler.cs" />
+    <Compile Include="TypeHandlers\BoolHandler.cs" />
+    <Compile Include="TypeHandlers\ByteaHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\DateHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\IntervalHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\TimeHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\TimestampHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\TimestampTzHandler.cs" />
+    <Compile Include="TypeHandlers\DateTimeHandlers\TimeTzHandler.cs" />
+    <Compile Include="TypeHandlers\EnumHandler.cs" />
+    <Compile Include="TypeHandlers\FullTextSearchHandlers\TsQueryHandler.cs" />
+    <Compile Include="TypeHandlers\FullTextSearchHandlers\TsVectorHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\BoxHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\CircleHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\LineHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\LineSegmentHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\PathHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\PointHandler.cs" />
+    <Compile Include="TypeHandlers\GeometricHandlers\PolygonHandler.cs" />
+    <Compile Include="TypeHandlers\HstoreHandler.cs" />
+    <Compile Include="TypeHandlers\InternalCharHandler.cs" />
+    <Compile Include="TypeHandlers\InternalTypesHandlers\Int2VectorHandler.cs" />
+    <Compile Include="TypeHandlers\InternalTypesHandlers\OIDVectorHandler.cs" />
+    <Compile Include="TypeHandlers\InternalTypesHandlers\TidHandler.cs" />
+    <Compile Include="TypeHandlers\JsonbHandler.cs" />
+    <Compile Include="TypeHandlers\MappedCompositeHandler.cs" />
+    <Compile Include="TypeHandlers\MappedEnumHandler.cs" />
+    <Compile Include="TypeHandlers\NetworkHandlers\CidrHandler.cs" />
+    <Compile Include="TypeHandlers\NetworkHandlers\InetHandler.cs" />
+    <Compile Include="TypeHandlers\NetworkHandlers\Macaddr8Handler.cs" />
+    <Compile Include="TypeHandlers\NetworkHandlers\MacaddrHandler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\DecimalRaw.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\DoubleHandler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\Int16Handler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\Int32Handler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\Int64Handler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\MoneyHandler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\NumericHandler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\SingleHandler.cs" />
+    <Compile Include="TypeHandlers\NumericHandlers\UInt32Handler.cs" />
+    <Compile Include="TypeHandlers\RangeHandler.cs" />
+    <Compile Include="TypeHandlers\RecordHandler.cs" />
+    <Compile Include="TypeHandlers\TextHandler.cs" />
+    <Compile Include="TypeHandlers\UnknownTypeHandler.cs" />
+    <Compile Include="TypeHandlers\UnmappedCompositeHandler.cs" />
+    <Compile Include="TypeHandlers\UnmappedEnumHandler.cs" />
+    <Compile Include="TypeHandlers\UuidHandler.cs" />
+    <Compile Include="TypeHandlers\VoidHandler.cs" />
+    <Compile Include="TypeHandling\DefaultTypeHandlerFactory.cs" />
+    <Compile Include="TypeHandling\INpgsqlSimpleTypeHandler.cs" />
+    <Compile Include="TypeHandling\INpgsqlTypeHandler.cs" />
+    <Compile Include="TypeHandling\ITextReaderHandler.cs" />
+    <Compile Include="TypeHandling\NpgsqlSafeReadException.cs" />
+    <Compile Include="TypeHandling\NpgsqlSimpleTypeHandler.cs" />
+    <Compile Include="TypeHandling\NpgsqlSimpleTypeHandlerWithPsv.cs" />
+    <Compile Include="TypeHandling\NpgsqlTypeHandler.cs" />
+    <Compile Include="TypeHandling\NpgsqlTypeHandlerFactory.cs" />
+    <Compile Include="TypeHandling\NpgsqlTypeHandler`.cs" />
+    <Compile Include="TypeMapping\ConnectorTypeMapper.cs" />
+    <Compile Include="TypeMapping\EntityFrameworkCoreCompat.cs" />
+    <Compile Include="TypeMapping\GlobalTypeMapper.cs" />
+    <Compile Include="TypeMapping\INpgsqlTypeMapper.cs" />
+    <Compile Include="TypeMapping\NpgsqlTypeMapping.cs" />
+    <Compile Include="TypeMapping\TypeMapperBase.cs" />
+    <Compile Include="TypeMapping\TypeMappingAttribute.cs" />
+    <Compile Include="UnixEndPoint.cs" />
+    <Compile Include="Unsafe.cs" />
+    <Compile Include="Util\CodeAnnotations.cs" />
+    <Compile Include="Util\VersionExtensions.cs" />
+    <Compile Include="ValueTask.cs" />
+    <Compile Include="VolatileResourceManager.cs" />
+    <Compile Include="WindowsUsernameProvider.cs" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseOptimizedCryptography' ">
-    <DefineConstants>$(DefineConstants);RELEASE;TRACE;OPTIMIZED_CRYPTOGRAPHY</DefineConstants>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'DebugOptimizedCryptography' ">
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE;OPTIMIZED_CRYPTOGRAPHY</DefineConstants>
-    <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="obj\Debug\build.force" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\Npgsql.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Npgsql.csproj.nuget.dgspec.json" />
+    <None Include="obj\Npgsql.csproj.nuget.g.props" />
+    <None Include="obj\Npgsql.csproj.nuget.g.targets" />
+    <None Include="obj\project.assets.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="obj\Debug\Npgsql.csproj.FileListAbsolute.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="obj\Debug\TempPE\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

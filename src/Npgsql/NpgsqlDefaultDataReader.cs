@@ -30,10 +30,10 @@ namespace Npgsql
 
         internal NpgsqlDefaultDataReader(NpgsqlConnector connector) : base(connector) {}
 
-        internal override ValueTask<IBackendMessage> ReadMessage(bool async)
+        internal override Task<IBackendMessage> ReadMessage(bool async)
             => Connector.ReadMessage(async);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal override Task ConsumeRow(bool async)
         {
             Debug.Assert(State == ReaderState.InResult || State == ReaderState.BeforeResult);
@@ -72,43 +72,43 @@ namespace Npgsql
         }
 
         // We know the entire row is buffered in memory (non-sequential reader), so no I/O will be performed
-        public override Task<T> GetFieldValueAsync<T>(int column, CancellationToken cancellationToken)
-            => Task.FromResult(GetFieldValue<T>(column));
+        //public override Task<T> GetFieldValueAsync<T>(int column, CancellationToken cancellationToken)
+        //    => Task.FromResult(GetFieldValue<T>(column));
 
-        public override T GetFieldValue<T>(int column)
-        {
-            CheckRowAndOrdinal(column);
+        //public override T GetFieldValue<T>(int column)
+        //{
+        //    CheckRowAndOrdinal(column);
 
-            SeekToColumn(column);
-            if (ColumnLen == -1)
-            {
-                if (NullableHandler<T>.Exists)
-                    return default;
-                if (typeof(T) == typeof(object))
-                    return (T)(object)DBNull.Value;
-                throw new InvalidCastException("Column is null");
-            }
+        //    SeekToColumn(column);
+        //    if (ColumnLen == -1)
+        //    {
+        //        if (NullableHandler<T>.Exists)
+        //            return default;
+        //        if (typeof(T) == typeof(object))
+        //            return (T)(object)DBNull.Value;
+        //        throw new InvalidCastException("Column is null");
+        //    }
 
-            var fieldDescription = RowDescription[column];
-            try
-            {
-                if (NullableHandler<T>.Exists)
-                    return NullableHandler<T>.Read(Buffer, ColumnLen, fieldDescription);
+        //    var fieldDescription = RowDescription[column];
+        //    try
+        //    {
+        //        if (NullableHandler<T>.Exists)
+        //            return NullableHandler<T>.Read(Buffer, ColumnLen, fieldDescription);
 
-                return typeof(T) == typeof(object)
-                    ? (T)fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, fieldDescription)
-                    : fieldDescription.Handler.Read<T>(Buffer, ColumnLen, fieldDescription);
-            }
-            catch (NpgsqlSafeReadException e)
-            {
-                throw e.InnerException;
-            }
-            catch
-            {
-                Connector.Break();
-                throw;
-            }
-        }
+        //        return typeof(T) == typeof(object)
+        //            ? (T)fieldDescription.Handler.ReadAsObject(Buffer, ColumnLen, fieldDescription)
+        //            : fieldDescription.Handler.Read<T>(Buffer, ColumnLen, fieldDescription);
+        //    }
+        //    catch (NpgsqlSafeReadException e)
+        //    {
+        //        throw e.InnerException;
+        //    }
+        //    catch
+        //    {
+        //        Connector.Break();
+        //        throw;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the value of the specified column as an instance of <see cref="object"/>.

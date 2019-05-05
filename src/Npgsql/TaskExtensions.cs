@@ -24,8 +24,8 @@ namespace Npgsql
             var timeLeft = timeout.TimeLeft;
             if (timeLeft <= TimeSpan.Zero)
                 throw new TimeoutException();
-            if (task != await Task.WhenAny(task, Task.Delay(timeLeft)))
-                throw new TimeoutException();
+            //if (task != await Task.WhenAny(task, Task.Delay(timeLeft)))
+            //    throw new TimeoutException();
             return await task;
         }
 
@@ -46,8 +46,8 @@ namespace Npgsql
             var timeLeft = timeout.TimeLeft;
             if (timeLeft <= TimeSpan.Zero)
                 throw new TimeoutException();
-            if (task != await Task.WhenAny(task, Task.Delay(timeLeft)))
-                throw new TimeoutException();
+            //if (task != await Task.WhenAny(task, Task.Delay(timeLeft)))
+            //    throw new TimeoutException();
             await task;
         }
 
@@ -63,8 +63,12 @@ namespace Npgsql
             var tcs = new TaskCompletionSource<bool>();
             using (cancellationToken.Register(
                         s => ((TaskCompletionSource<bool>)s).TrySetResult(true), tcs))
-                if (task != await Task.WhenAny(task, tcs.Task))
-                    throw new TaskCanceledException(task);
+                await Task.Factory.ContinueWhenAny(new Task[] { task, tcs.Task }, p =>
+                {
+                    if(task != p) throw new TaskCanceledException(task);
+                } );
+                //if (task != await Task.Factory.ContinueWhenAny(new Task[] { task, tcs.Task }, null))
+                //    throw new TaskCanceledException(task);
             return await task;
         }
 
@@ -80,8 +84,8 @@ namespace Npgsql
             var tcs = new TaskCompletionSource<bool>();
             using (cancellationToken.Register(
                         s => ((TaskCompletionSource<bool>)s).TrySetResult(true), tcs))
-                if (task != await Task.WhenAny(task, tcs.Task))
-                    throw new TaskCanceledException(task);
+                //if (task != await Task.WhenAny(task, tcs.Task))
+                //    throw new TaskCanceledException(task);
             await task;
         }
 

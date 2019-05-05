@@ -167,7 +167,8 @@ namespace Npgsql.TypeHandlers.NumericHandlers
         {
             var weight = 0;
             var groupCount = 0;
-            Span<short> groups = stackalloc short[MaxGroupCount];
+
+            var groups = new Span<short>(new short[MaxGroupCount] );
 
             var raw = new DecimalRaw(value);
             if (raw.Low != 0 || raw.Mid != 0 || raw.High != 0)

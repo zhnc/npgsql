@@ -56,7 +56,7 @@ namespace Npgsql
     public abstract class NpgsqlDataReader : DbDataReader
 #pragma warning restore CA1010
 #if !NET45 && !NET451
-        , IDbColumnSchemaGenerator
+        //, IDbColumnSchemaGenerator
 #endif
     {
         internal NpgsqlCommand Command { get; private set; }
@@ -163,11 +163,11 @@ namespace Npgsql
         /// </summary>
         /// <param name="cancellationToken">Ignored for now.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public override Task<bool> ReadAsync(CancellationToken cancellationToken)
-        {
-            using (NoSynchronizationContextScope.Enter())
-                return Read(true);
-        }
+        //public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+        //{
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return Read(true);
+        //}
 
         /// <summary>
         /// Implementation of read
@@ -311,7 +311,12 @@ namespace Npgsql
             }
         }
 
-        internal abstract ValueTask<IBackendMessage> ReadMessage(bool async);
+        internal Task<bool> ReadAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal abstract Task<IBackendMessage> ReadMessage(bool async);
         internal abstract void ProcessDataMessage(DataRowMessage dataMsg);
         internal abstract Task SeekToColumn(int column, bool async);
         internal abstract Task SeekInColumn(int posInColumn, bool async);
@@ -347,7 +352,7 @@ namespace Npgsql
         /// </summary>
         /// <param name="cancellationToken">Currently ignored.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        public  Task<bool> NextResultAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -366,7 +371,7 @@ namespace Npgsql
         /// <summary>
         /// Internal implementation of NextResult
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         async Task<bool> NextResult(bool async, bool isConsuming=false)
         {
             IBackendMessage msg;
@@ -526,6 +531,11 @@ namespace Npgsql
             return false;
         }
 
+        internal Task NextResultAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         void PopulateOutputParameters()
         {
             // The first row in a stored procedure command that has output parameters needs to be traversed twice -
@@ -644,7 +654,7 @@ namespace Npgsql
         /// a statement-by-statement basis, unlike <see cref="NpgsqlDataReader.RecordsAffected"/>
         /// which exposes an aggregation across all statements.
         /// </remarks>
-        public IReadOnlyList<NpgsqlStatement> Statements => _statements.AsReadOnly();
+        public IList<NpgsqlStatement> Statements => _statements.AsReadOnly();
 
         /// <summary>
         /// Gets a value that indicates whether this DbDataReader contains one or more rows.
@@ -770,7 +780,7 @@ namespace Npgsql
 
         internal delegate T ReadDelegate<T>(NpgsqlReadBuffer buffer, int columnLen, FieldDescription fieldDescription);
 
-        internal delegate ValueTask<T> ReadAsyncDelegate<T>(NpgsqlReadBuffer buffer, int columnLen, bool async, FieldDescription fieldDescription);
+        internal delegate Task<T> ReadAsyncDelegate<T>(NpgsqlReadBuffer buffer, int columnLen, bool async, FieldDescription fieldDescription);
 
         internal static class NullableHandler<T>
         {
@@ -785,21 +795,23 @@ namespace Npgsql
         static class NullableHandler
         {
             static readonly MethodInfo _readNullableMethod = new ReadDelegate<int?>(ReadNullable<int>).Method.GetGenericMethodDefinition();
-            static readonly MethodInfo _readNullableAsyncMethod = new ReadAsyncDelegate<int?>(ReadNullable<int>).Method.GetGenericMethodDefinition();
+            //static readonly MethodInfo _readNullableAsyncMethod = new ReadAsyncDelegate<int?>(ReadNullable<int>).Method.GetGenericMethodDefinition();
 
             static T? ReadNullable<T>(NpgsqlReadBuffer buffer, int columnLen, FieldDescription fieldDescription) where T : struct
                 => fieldDescription.Handler.Read<T>(buffer, columnLen, fieldDescription);
 
-            static async ValueTask<T?> ReadNullable<T>(NpgsqlReadBuffer buffer, int columnLen, bool async, FieldDescription fieldDescription) where T : struct
-                => await fieldDescription.Handler.Read<T>(buffer, columnLen, async, fieldDescription);
+            //static async Task<T?> ReadNullable<T>(NpgsqlReadBuffer buffer, int columnLen, bool async, FieldDescription fieldDescription) where T : struct
+            //    => await fieldDescription.Handler.Read<T>(buffer, columnLen, async, fieldDescription);
 
             public static bool Construct<T>(out ReadDelegate<T> read, out ReadAsyncDelegate<T> readAsync)
             {
                 var underlyingType = Nullable.GetUnderlyingType(typeof(T));
                 if (underlyingType != null)
                 {
-                    read = (ReadDelegate<T>)_readNullableMethod.MakeGenericMethod(underlyingType).CreateDelegate(typeof(ReadDelegate<T>));
-                    readAsync = (ReadAsyncDelegate<T>)_readNullableAsyncMethod.MakeGenericMethod(underlyingType).CreateDelegate(typeof(ReadAsyncDelegate<T>));
+                    //read = (ReadDelegate<T>)_readNullableMethod.MakeGenericMethod(underlyingType).CreateDelegate(typeof(ReadDelegate<T>));
+                    //readAsync = (ReadAsyncDelegate<T>)_readNullableAsyncMethod.MakeGenericMethod(underlyingType).CreateDelegate(typeof(ReadAsyncDelegate<T>));
+                    read = null;
+                    readAsync = null;
                     return true;
                 }
                 else
@@ -828,6 +840,11 @@ namespace Npgsql
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The value of the specified column.</returns>
         public override byte GetByte(int ordinal) => GetFieldValue<byte>(ordinal);
+
+        public T GetFieldValue<T>(int ordinal)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets the value of the specified column as a single character.
@@ -1046,20 +1063,20 @@ namespace Npgsql
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The returned object.</returns>
-        public override Stream GetStream(int ordinal) => GetStream(ordinal, false).Result;
+        //public override Stream GetStream(int ordinal) => GetStream(ordinal, false).Result;
 
         /// <summary>
         /// Retrieves data as a <see cref="Stream"/>.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The returned object.</returns>
-        public Task<Stream> GetStreamAsync(int ordinal)
-        {
-            using (NoSynchronizationContextScope.Enter())
-                return GetStream(ordinal, true).AsTask();
-        }
+        //public Task<Stream> GetStreamAsync(int ordinal)
+        //{
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return GetStream(ordinal, true).AsTask();
+        //}
 
-        ValueTask<Stream> GetStream(int ordinal, bool async)
+        Task<Stream> GetStream(int ordinal, bool async)
         {
             CheckRowAndOrdinal(ordinal);
 
@@ -1070,19 +1087,21 @@ namespace Npgsql
             return GetStreamInternal(ordinal, async);
         }
 
-        ValueTask<Stream> GetStreamInternal(int ordinal, bool async)
+        Task<Stream> GetStreamInternal(int ordinal, bool async)
         {
             if (ColumnStream != null && !ColumnStream.IsDisposed)
                 throw new InvalidOperationException("A stream is already open for this reader");
 
             var t = SeekToColumn(ordinal, async);
             if (!t.IsCompleted)
-                return new ValueTask<Stream>(GetStreamLong(t));
+                return new Task<Stream>(()=>GetStreamLong(t).Result);
 
             if (ColumnLen == -1)
                 throw new InvalidCastException("Column is null");
             PosInColumn += ColumnLen;
-            return new ValueTask<Stream>(ColumnStream = (NpgsqlReadBuffer.ColumnStream)Buffer.GetStream(ColumnLen, !IsSequential));
+            return new Task<Stream>(()=> { ColumnStream = (NpgsqlReadBuffer.ColumnStream)Buffer.GetStream(ColumnLen, !IsSequential);
+                return ColumnStream;
+            });
 
             async Task<Stream> GetStreamLong(Task seekTask)
             {
@@ -1219,34 +1238,34 @@ namespace Npgsql
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The returned object.</returns>
-        public override TextReader GetTextReader(int ordinal)
-            => GetTextReader(ordinal, false).Result;
+        //public override TextReader GetTextReader(int ordinal)
+        //    => GetTextReader(ordinal, false).Result;
 
         /// <summary>
         /// Retrieves data as a <see cref="TextReader"/>.
         /// </summary>
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The returned object.</returns>
-        public Task<TextReader> GetTextReaderAsync(int ordinal)
-        {
-            using (NoSynchronizationContextScope.Enter())
-                return GetTextReader(ordinal, true).AsTask();
-        }
+        //public Task<TextReader> GetTextReaderAsync(int ordinal)
+        //{
+        //    using (NoSynchronizationContextScope.Enter())
+        //        return GetTextReader(ordinal, true).AsTask();
+        //}
 
-        async ValueTask<TextReader> GetTextReader(int ordinal, bool async)
-        {
-            CheckRowAndOrdinal(ordinal);
+        //async Task<TextReader> GetTextReader(int ordinal, bool async)
+        //{
+        //    CheckRowAndOrdinal(ordinal);
 
-            var fieldDescription = RowDescription[ordinal];
-            if (!(fieldDescription.Handler is ITextReaderHandler handler))
-                throw new InvalidCastException($"GetTextReader() not supported for type {fieldDescription.Handler.PgDisplayName}");
+        //    var fieldDescription = RowDescription[ordinal];
+        //    if (!(fieldDescription.Handler is ITextReaderHandler handler))
+        //        throw new InvalidCastException($"GetTextReader() not supported for type {fieldDescription.Handler.PgDisplayName}");
 
-            var stream = async
-                ? await GetStreamInternal(ordinal, async)
-                : GetStreamInternal(ordinal, async).Result;
+        //    var stream = async
+        //        ? await GetStreamInternal(ordinal, async)
+        //        : GetStreamInternal(ordinal, async).Result;
 
-            return handler.GetTextReader(stream);
-        }
+        //    return handler.GetTextReader(stream);
+        //}
 
         #endregion
 
@@ -1379,8 +1398,8 @@ namespace Npgsql
                 .GetColumnSchema();
 
 #if !NET45 && !NET451
-        ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
-            => new ReadOnlyCollection<DbColumn>(GetColumnSchema().Cast<DbColumn>().ToList());
+        //ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
+        //    => new ReadOnlyCollection<DbColumn>(GetColumnSchema().Cast<DbColumn>().ToList());
 #endif
 
         #endregion
@@ -1464,14 +1483,14 @@ namespace Npgsql
 
         #region Checks
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal void CheckRowAndOrdinal(int ordinal)
         {
             CheckRow();
             CheckColumn(ordinal);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void CheckRow()
         {
             if (!IsOnRow)
@@ -1479,14 +1498,14 @@ namespace Npgsql
         }
 
         // ReSharper disable once UnusedParameter.Local
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal void CheckColumn(int column)
         {
             if (column < 0 || column >= FieldCount)
                 throw new IndexOutOfRangeException($"Column must be between {0} and {(FieldCount - 1)}");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         void CheckResultSet()
         {
             if (FieldCount == 0)

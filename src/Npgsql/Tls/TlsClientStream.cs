@@ -29,6 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Numerics;
+//using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -1215,7 +1216,7 @@ namespace Npgsql.Tls
             }
             else
             {
-#if NET45 || NET451
+//#if NET45 || NET451
                 var pubKey = _handshakeData.CertList[0].PublicKey.Key;
                 var rsa = pubKey as RSACryptoServiceProvider;
                 var dsa = pubKey as DSACryptoServiceProvider;
@@ -1244,26 +1245,26 @@ namespace Npgsql.Tls
                 {
                     SendAlertFatal(AlertDescription.IllegalParameter);
                 }
-#else
-                var ok = false;
-                if (signatureAlgorithm == SignatureAlgorithm.RSA)
-                {
-                    using (var rsa = _handshakeData.CertList[0].GetRSAPublicKey())
-                    {
-                        if (rsa != null)
-                        {
-                            ok = _pendingConnState.TlsVersion == TlsVersion.TLSv1_2 ?
-                                rsa.VerifyHash(hash, signature, Hasher.GetHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1) :
-                                RsaPKCS1.VerifyRsaPKCS1(rsa, signature, hash, _pendingConnState.TlsVersion == TlsVersion.TLSv1_0 && _pendingConnState.CipherSuite.KeyExchange == KeyExchange.DHE_RSA);
-                        }
-                    }
-                }
+//#else
+//                var ok = false;
+//                if (signatureAlgorithm == SignatureAlgorithm.RSA)
+//                {
+//                    using (var rsa = _handshakeData.CertList[0].GetRSAPublicKey())
+//                    {
+//                        if (rsa != null)
+//                        {
+//                            ok = _pendingConnState.TlsVersion == TlsVersion.TLSv1_2 ?
+//                                rsa.VerifyHash(hash, signature, Hasher.GetHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1) :
+//                                RsaPKCS1.VerifyRsaPKCS1(rsa, signature, hash, _pendingConnState.TlsVersion == TlsVersion.TLSv1_0 && _pendingConnState.CipherSuite.KeyExchange == KeyExchange.DHE_RSA);
+//                        }
+//                    }
+//                }
 
-                if (!ok)
-                {
-                    SendAlertFatal(AlertDescription.IllegalParameter);
-                }
-#endif
+//                if (!ok)
+//                {
+//                    SendAlertFatal(AlertDescription.IllegalParameter);
+//                }
+//#endif
             }
         }
 
@@ -1442,14 +1443,14 @@ namespace Npgsql.Tls
 
         HandshakeType SendCertificateVerify(ref int offset)
         {
-#if NET45 || NET451
+            //#if NET45 || NET451
             var key = new X509Certificate2(_clientCertificates[0]).PrivateKey;
 
             var keyDsa = key as DSACryptoServiceProvider;
             var keyRsa = key as RSACryptoServiceProvider;
-#else
-            var keyRsa = ((X509Certificate2)_clientCertificates[0]).GetRSAPrivateKey();
-#endif
+            //#else
+            //var keyRsa = ((X509Certificate2)_clientCertificates[0]).GetRSAPrivateKey();
+//#endif
 
             byte[] signature = null, hash = null;
 
@@ -1523,15 +1524,15 @@ namespace Npgsql.Tls
                     signature = RsaPKCS1.SignRsaPKCS1(keyRsa, fullHash);
 
                     // BigIntegers have no Dispose/Clear methods, but they contain sensitive data, so force a garbage collection to remove the data.
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, false);
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 }
                 else
                 {
-#if NET45 || NET451
+//#if NET45 || NET451
                     signature = keyRsa.SignHash(hash, Utils.HashNameToOID["SHA1"]);
-#else
-                    signature = keyRsa.SignHash(hash, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-#endif
+//#else
+//                    signature = keyRsa.SignHash(hash, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+//#endif
 
                     if (_pendingConnState.TlsVersion == TlsVersion.TLSv1_2)
                     {
@@ -1634,7 +1635,7 @@ namespace Npgsql.Tls
         async Task WriteAlertFatal(AlertDescription description, bool async)
         {
             if (async)
-                await _writeLock.WaitAsync();
+                _writeLock.Wait();
             else
                 _writeLock.Wait();
             try
@@ -1676,7 +1677,9 @@ namespace Npgsql.Tls
         async Task SendClosureAlert(bool async)
         {
             if (async)
-                await _writeLock.WaitAsync();
+                _writeLock.Wait();
+
+            //await _writeLock.WaitAsync();
             else
                 _writeLock.Wait();
             try
@@ -1830,9 +1833,9 @@ namespace Npgsql.Tls
         public override void Write(byte[] buffer, int offset, int len)
             => Write(buffer, offset, len, false).GetAwaiter().GetResult();
 
-        // Note: As this is an internal component, we don't set NoSynchronizationContextScope
-        public override Task WriteAsync(byte[] buffer, int offset, int len, CancellationToken cancellationToken)
-            => Write(buffer, offset, len, true);
+        //// Note: As this is an internal component, we don't set NoSynchronizationContextScope
+        //public override Task WriteAsync(byte[] buffer, int offset, int len, CancellationToken cancellationToken)
+        //    => Write(buffer, offset, len, true);
 
         async Task Write(byte[] buffer, int offset, int len, bool async)
         {
@@ -1845,9 +1848,9 @@ namespace Npgsql.Tls
                 throw new ArgumentOutOfRangeException("len");
 #endif
 
-            if (async)
-                await _writeLock.WaitAsync();
-            else
+            //if (async)
+            //    await _writeLock.WaitAsync();
+            //else
                 _writeLock.Wait();
             try
             {
@@ -1890,18 +1893,18 @@ namespace Npgsql.Tls
             }
         }
 
-        public override async Task FlushAsync(CancellationToken cancellataionToken)
-        {
-            await _writeLock.WaitAsync();
-            try
-            {
-                await Flush(true);
-            }
-            finally
-            {
-                _writeLock.Release();
-            }
-        }
+        //public override async Task FlushAsync(CancellationToken cancellataionToken)
+        //{
+        //    await _writeLock.WaitAsync();
+        //    try
+        //    {
+        //        await Flush(true);
+        //    }
+        //    finally
+        //    {
+        //        _writeLock.Release();
+        //    }
+        //}
 
         async Task Flush(bool async)
         {
@@ -1941,8 +1944,8 @@ namespace Npgsql.Tls
         public override int Read(byte[] buffer, int offset, int len)
             => Read(buffer, offset, len, false, false, false).GetAwaiter().GetResult();
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int len, CancellationToken cancellationToken)
-            => Read(buffer, offset, len, false, false, true);
+        //public override Task<int> ReadAsync(byte[] buffer, int offset, int len, CancellationToken cancellationToken)
+        //    => Read(buffer, offset, len, false, false, true);
 
         async Task<int> Read(byte[] buffer, int offset, int len, bool onlyProcessHandshake, bool readNewDataIfAvailable, bool async)
         {
@@ -1981,9 +1984,9 @@ namespace Npgsql.Tls
                                 {
                                     SendAlertFatal(AlertDescription.UnexpectedMessage);
                                 }
-                                if (async)
-                                    await _writeLock.WaitAsync();
-                                else
+                                //if (async)
+                                //    await _writeLock.WaitAsync();
+                                //else
                                     _writeLock.Wait();
                                 try
                                 {

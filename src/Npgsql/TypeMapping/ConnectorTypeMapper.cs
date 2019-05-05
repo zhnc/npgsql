@@ -135,7 +135,7 @@ namespace Npgsql.TypeMapping
             }
 
             // Nothing worked
-            if (type.GetTypeInfo().IsEnum)
+            if (type.IsEnum)
                 throw new NotSupportedException($"The CLR enum type {type.Name} must be registered with Npgsql before usage, please refer to the documentation.");
 
             if (typeof(IEnumerable).IsAssignableFrom(type))
@@ -148,13 +148,13 @@ namespace Npgsql.TypeMapping
         [CanBeNull]
         static Type GetArrayElementType(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
+            var typeInfo = type;
             if (typeInfo.IsArray)
                 return type.GetElementType();
 
-            var ilist = typeInfo.ImplementedInterfaces.FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
-            if (ilist != null)
-                return ilist.GetGenericArguments()[0];
+            //var ilist = typeInfo.ImplementedInterfaces.FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+            //if (ilist != null)
+            //    return ilist.GetGenericArguments()[0];
 
             if (typeof(IList).IsAssignableFrom(type))
                 throw new NotSupportedException("Non-generic IList is a supported parameter, but the NpgsqlDbType parameter must be set on the parameter");

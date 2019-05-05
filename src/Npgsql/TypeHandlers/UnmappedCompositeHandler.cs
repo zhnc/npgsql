@@ -78,7 +78,7 @@ namespace Npgsql.TypeHandlers
 
         #region Read
 
-        protected internal override async ValueTask<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        protected internal override async Task<TAny> Read<TAny>(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
         {
             if (_resolvedType != typeof(TAny))
                 Map(typeof(TAny));
@@ -102,14 +102,14 @@ namespace Npgsql.TypeHandlers
             return (TAny)result;
         }
 
-        internal override ValueTask<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        internal override Task<object> ReadAsObject(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
             => Read(buf, len, async, fieldDescription);
 
         internal override object ReadAsObject(NpgsqlReadBuffer buf, int len, FieldDescription fieldDescription = null)
             => Read(buf, len, false, fieldDescription).Result;
 
 #pragma warning disable CS1998 // Needless async (for netstandard1.3)
-        public override async ValueTask<object> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
+        public override async Task<object> Read(NpgsqlReadBuffer buf, int len, bool async, FieldDescription fieldDescription = null)
 #pragma warning restore CS1998 // Needless async (for netstandard1.3)
         {
 #if NETSTANDARD1_3
@@ -251,7 +251,7 @@ namespace Npgsql.TypeHandlers
             {
                 var typeMember = (
                     from m in type.GetMembers()
-                    let attr = m.GetCustomAttribute<PgNameAttribute>()
+                    let attr = m.GetCustomAttributes(false)[0] as PgNameAttribute//.GetCustomAttribute<PgNameAttribute>()
                     where attr != null && attr.PgName == member.PgName ||
                           attr == null && _nameTranslator.TranslateMemberName(m.Name) == member.PgName
                     select m
@@ -263,8 +263,8 @@ namespace Npgsql.TypeHandlers
                 switch (typeMember)
                 {
                 case PropertyInfo p:
-                    member.Getter = composite => p.GetValue(composite);
-                    member.Setter = (composite, v) => p.SetValue(composite, v);
+                    member.Getter = composite => p.GetValue(composite, new object[0]);
+                    member.Setter = (composite, v) => p.SetValue(composite, v, new object[0]);
                     break;
                 case FieldInfo f:
                     member.Getter = composite => f.GetValue(composite);
